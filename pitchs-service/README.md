@@ -10,12 +10,12 @@ Dịch vụ **Quản lý Sân bóng & Báo giá** cho hệ thống quản lý đ
 
 ---
 
-## 1. Nhiệm vụ Buổi TH1
+## 1. Nhiệm vụ theo từng buổi (TH1 - TH2)
 
-| Câu | Yêu cầu | Đã hiện thực ở |
+| Buổi | Nội dung của Linh | Đã hiện thực ở |
 |---|---|---|
-| Câu 1 ý 1 | Khởi tạo service trên port 8082, kết nối CSDL `pitch_db` | `application.yml`, `PitchServiceApplication.java` |
-| Câu 2 ý 1 | Xây dựng RESTful API CRUD cho thực thể Sân bóng (Pitch): Thêm, Sửa, Xóa, Lấy danh sách | `PitchController`, `PitchService`, `PitchServiceImpl`, `PitchRepository`, `Pitch` |
+| **TH1** | Khởi tạo service port 8082, CSDL `pitch_db`, CRUD cơ bản cho thực thể Sân bóng | `application.yml`, `Pitch`, `PitchRepository`, `PitchServiceImpl` |
+| **TH2** | Chuẩn hóa DTO trao đổi, cung cấp API thông tin sân & báo giá cho `booking-service` gọi | `PitchResponseDTO`, `PriceResponseDTO`, `PitchRequestDTO`, `GET /api/pitches/{id}/price` |
 
 ---
 
@@ -40,62 +40,44 @@ mvn clean spring-boot:run -Dspring-boot.run.profiles=h2
 
 ---
 
-## 3. Danh sách RESTful API
+## 3. Danh sách RESTful API (Đã chuẩn hóa DTO cho TH2)
 
-| Method | Endpoint | Mô tả |
-|---|---|---|
-| `GET` | `/api/pitches` | Lấy danh sách tất cả sân bóng |
-| `GET` | `/api/pitches/{id}` | Lấy chi tiết sân bóng theo ID |
-| `POST` | `/api/pitches` | Thêm mới một sân bóng |
-| `PUT` | `/api/pitches/{id}` | Cập nhật thông tin sân bóng theo ID |
-| `DELETE` | `/api/pitches/{id}` | Xóa một sân bóng theo ID |
+| Method | Endpoint | Đối tượng gọi | Mô tả |
+|---|---|---|---|
+| `GET` | `/api/pitches` | Frontend / Admin | Lấy danh sách tất cả sân bóng (DTO) |
+| `GET` | `/api/pitches/{id}` | **booking-service** | Lấy thông tin chi tiết một sân bóng theo ID |
+| `GET` | `/api/pitches/{id}/price` | **booking-service** | Lấy thông tin báo giá và trạng thái khả dụng của sân |
+| `POST` | `/api/pitches` | Admin / Chủ sân | Thêm mới một sân bóng (Validate dữ liệu đầu vào) |
+| `PUT` | `/api/pitches/{id}` | Admin / Chủ sân | Cập nhật thông tin sân bóng theo ID |
+| `DELETE` | `/api/pitches/{id}` | Admin / Chủ sân | Xóa sân bóng theo ID |
 
 Swagger UI tài liệu API: **http://localhost:8082/swagger-ui.html**
 
 ---
 
-## 4. Test API với cURL
+## 4. Hướng dẫn cho `booking-service` (Bạn Nhật) gọi sang
 
-### 4.1. Thêm sân mới (POST)
-```bash
-curl -X POST http://localhost:8082/api/pitches \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Sân 7 Hoàng Gia",
-    "type": "SAN_7",
-    "pricePerHour": 380000,
-    "address": "Số 10 Phạm Hùng, Nam Từ Liêm, Hà Nội",
-    "status": "AVAILABLE",
-    "description": "Mặt sân mới, có khu vực khán đài nhỏ"
-  }'
+### 4.1. Cấu hình WebClient trong `booking-service`
+```java
+@Configuration
+public class WebClientConfig {
+    @Bean
+    public WebClient pitchWebClient() {
+        return WebClient.builder()
+                .baseUrl("http://localhost:8082")
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .build();
+    }
+}
 ```
 
-### 4.2. Lấy danh sách sân (GET)
-```bash
-curl -X GET http://localhost:8082/api/pitches
+### 4.2. Gọi API lấy giá sân bằng WebClient
+```java
+public PriceResponseDTO getPitchPrice(Long pitchId) {
+    return pitchWebClient.get()
+            .uri("/api/pitches/{id}/price", pitchId)
+            .retrieve()
+            .bodyToMono(PriceResponseDTO.class)
+            .block();
+}
 ```
-
-### 4.3. Xem chi tiết sân (GET)
-```bash
-curl -X GET http://localhost:8082/api/pitches/1
-```
-
-### 4.4. Cập nhật thông tin sân (PUT)
-```bash
-curl -X PUT http://localhost:8082/api/pitches/1 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Sân 5 số 1 - Cỏ nhân tạo (Đã bảo trì xong)",
-    "type": "SAN_5",
-    "pricePerHour": 280000,
-    "address": "Khu thể thao Bách Khoa, Hai Bà Trưng, Hà Nội",
-    "status": "AVAILABLE",
-    "description": "Sân 5 người, cỏ nhân tạo vừa bảo trì"
-  }'
-```
-
-### 4.5. Xóa sân (DELETE)
-```bash
-curl -X DELETE http://localhost:8082/api/pitches/1
-```
-

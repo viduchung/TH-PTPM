@@ -1,13 +1,13 @@
 {
   "info": {
-    "name": "Pitchs Service (Port 8082) - TH1",
-    "_postman_id": "b1a2c3d4-pitch-service-th1-collection",
-    "description": "Bộ API kiểm thử CRUD Sân bóng (TH1) - Microservice pitchs-service",
+    "name": "Pitchs Service (Port 8082) - TH1 & TH2",
+    "_postman_id": "b1a2c3d4-pitch-service-th2-collection",
+    "description": "Bộ API kiểm thử CRUD Sân bóng & Giao tiếp Inter-Service (TH2) - Microservice pitchs-service",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "1. Lấy danh sách sân bóng",
+      "name": "1. Lấy danh sách sân bóng (DTO)",
       "request": {
         "method": "GET",
         "header": [],
@@ -21,7 +21,7 @@
       }
     },
     {
-      "name": "2. Xem chi tiết sân bóng theo ID",
+      "name": "2. Xem chi tiết sân bóng (cho booking-service)",
       "request": {
         "method": "GET",
         "header": [],
@@ -35,7 +35,21 @@
       }
     },
     {
-      "name": "3. Thêm mới sân bóng",
+      "name": "3. [TH2] Lấy giá & tình trạng sân (cho booking-service)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8082/api/pitches/1/price",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8082",
+          "path": ["api", "pitches", "1", "price"]
+        }
+      }
+    },
+    {
+      "name": "4. Thêm mới sân bóng",
       "request": {
         "method": "POST",
         "header": [
@@ -58,7 +72,7 @@
       }
     },
     {
-      "name": "4. Cập nhật thông tin sân bóng",
+      "name": "5. Cập nhật thông tin sân bóng",
       "request": {
         "method": "PUT",
         "header": [
@@ -81,7 +95,7 @@
       }
     },
     {
-      "name": "5. Xóa sân bóng theo ID",
+      "name": "6. Xóa sân bóng theo ID",
       "request": {
         "method": "DELETE",
         "header": [],
@@ -96,4 +110,3 @@
     }
   ]
 }
-
