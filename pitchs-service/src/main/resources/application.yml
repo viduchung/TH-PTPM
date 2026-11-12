@@ -10,7 +10,7 @@ spring:
     name: pitchs-service
 
   # ------------------------------------------------------------
-  #  CSDL: pitch_db (MySQL) - TH1 / TH4 Database-per-Service
+  #  CSDL: pitch_db (MySQL) - Database-per-Service (TH1/TH4)
   #  Nếu chưa bật MySQL, chạy profile H2: -Dspring-boot.run.profiles=h2
   # ------------------------------------------------------------
   datasource:
@@ -34,7 +34,17 @@ spring:
       write-dates-as-timestamps: false
 
 # ------------------------------------------------------------
-#  Eureka Service Registry (Chuẩn bị sẵn cho TH7, mặc định false)
+#  JWT & BẢO MẬT LIÊN SERVICE (TH5, TH6)
+#  Khóa bí mật đồng bộ với auth-service để giải mã JWT
+# ------------------------------------------------------------
+app:
+  jwt:
+    secret: ${JWT_SECRET:FootballBookingAuthServiceSecretKey2026_ChangeMeInProductionPlease_0123456789}
+  internal:
+    service-key: ${INTERNAL_SERVICE_KEY:FootballInternalSecretServiceKey2026}
+
+# ------------------------------------------------------------
+#  Eureka Service Registry (Chuẩn bị sẵn cho TH7)
 # ------------------------------------------------------------
 eureka:
   client:
@@ -54,4 +64,3 @@ springdoc:
     path: /swagger-ui.html
   api-docs:
     path: /v3/api-docs
-

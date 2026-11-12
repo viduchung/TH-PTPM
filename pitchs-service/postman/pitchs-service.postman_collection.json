@@ -1,18 +1,106 @@
 {
   "info": {
-    "name": "Pitchs Service (Port 8082) - TH1 to TH4",
-    "_postman_id": "b1a2c3d4-pitch-service-th4-collection",
-    "description": "Bộ API kiểm thử đầy đủ từ TH1 đến TH4 (CRUD, Báo giá, Tìm kiếm lọc phân trang, Giờ vàng JPA) - Microservice pitchs-service",
+    "name": "Pitchs Service (Port 8082) - TH1 to TH6 Complete",
+    "_postman_id": "b1a2c3d4-pitch-service-th6-collection",
+    "description": "Bộ API hoàn chỉnh từ TH1 đến TH6 (CRUD, Phân trang, JPA Giờ vàng, Bảo mật JWT RBAC, Provider /quote)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "1. [TH3] Tìm kiếm & Phân trang sân bóng",
+      "name": "1. [TH6] Tính báo giá /quote (Giờ thường + Giờ vàng)",
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8082/api/pitches/search?type=SAN_7&status=AVAILABLE&page=0&size=5&sortBy=pricePerHour&sortDir=asc",
+          "raw": "http://localhost:8082/api/pitches/1/quote?date=2026-11-20&startTime=16:30:00&endTime=18:30:00",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8082",
+          "path": ["api", "pitches", "1", "quote"],
+          "query": [
+            { "key": "date", "value": "2026-11-20" },
+            { "key": "startTime", "value": "16:30:00" },
+            { "key": "endTime", "value": "18:30:00" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "2. [TH6] Lỗi báo giá sai giờ (400 Bad Request)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8082/api/pitches/1/quote?date=2026-11-20&startTime=19:00:00&endTime=17:00:00",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8082",
+          "path": ["api", "pitches", "1", "quote"],
+          "query": [
+            { "key": "date", "value": "2026-11-20" },
+            { "key": "startTime", "value": "19:00:00" },
+            { "key": "endTime", "value": "17:00:00" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "3. [TH5] Thêm sân KHÔNG CÓ TOKEN (Test 401)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Sân Không Quyền\",\n  \"type\": \"SAN_5\",\n  \"pricePerHour\": 300000\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8082/api/pitches",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8082",
+          "path": ["api", "pitches"]
+        }
+      }
+    },
+    {
+      "name": "4. [TH5/6] Thêm sân bằng Internal Service Key",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Internal-Service-Key",
+            "value": "FootballInternalSecretServiceKey2026"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Sân 7 M2M Internal\",\n  \"type\": \"SAN_7\",\n  \"pricePerHour\": 450000,\n  \"status\": \"AVAILABLE\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8082/api/pitches",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8082",
+          "path": ["api", "pitches"]
+        }
+      }
+    },
+    {
+      "name": "5. [TH3] Tìm kiếm & Phân trang sân bóng",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8082/api/pitches/search?type=SAN_7&status=AVAILABLE&page=0&size=5",
           "protocol": "http",
           "host": ["localhost"],
           "port": "8082",
@@ -21,107 +109,8 @@
             { "key": "type", "value": "SAN_7" },
             { "key": "status", "value": "AVAILABLE" },
             { "key": "page", "value": "0" },
-            { "key": "size", "value": "5" },
-            { "key": "sortBy", "value": "pricePerHour" },
-            { "key": "sortDir", "value": "asc" }
+            { "key": "size", "value": "5" }
           ]
-        }
-      }
-    },
-    {
-      "name": "2. Lấy chi tiết sân kèm Giờ vàng (TH4)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8082/api/pitches/1",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8082",
-          "path": ["api", "pitches", "1"]
-        }
-      }
-    },
-    {
-      "name": "3. [TH4] Thêm khung giờ vàng cho sân",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"dayOfWeek\": \"WEEKEND\",\n  \"startTime\": \"07:00:00\",\n  \"endTime\": \"09:30:00\",\n  \"pricePerHour\": 300000,\n  \"description\": \"Khung giờ sáng cuối tuần\"\n}"
-        },
-        "url": {
-          "raw": "http://localhost:8082/api/pitches/1/golden-hours",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8082",
-          "path": ["api", "pitches", "1", "golden-hours"]
-        }
-      }
-    },
-    {
-      "name": "4. [TH4] Xóa khung giờ vàng của sân",
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8082/api/pitches/1/golden-hours/1",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8082",
-          "path": ["api", "pitches", "1", "golden-hours", "1"]
-        }
-      }
-    },
-    {
-      "name": "5. [TH3] Test Validation lỗi (400 Bad Request)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"name\": \"\",\n  \"type\": \"SAN_99\",\n  \"pricePerHour\": -500,\n  \"status\": \"INVALID_STATUS\"\n}"
-        },
-        "url": {
-          "raw": "http://localhost:8082/api/pitches",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8082",
-          "path": ["api", "pitches"]
-        }
-      }
-    },
-    {
-      "name": "6. Thêm sân mới hợp lệ",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"name\": \"Sân 7 Hoàng Gia VIP\",\n  \"type\": \"SAN_7\",\n  \"pricePerHour\": 420000,\n  \"address\": \"Số 10 Phạm Hùng, Nam Từ Liêm, Hà Nội\",\n  \"status\": \"AVAILABLE\",\n  \"description\": \"Mặt sân mới, cỏ chất lượng cao\",\n  \"goldenHourPrices\": [\n    {\n      \"dayOfWeek\": \"ALL_DAYS\",\n      \"startTime\": \"18:00:00\",\n      \"endTime\": \"21:00:00\",\n      \"pricePerHour\": 550000,\n      \"description\": \"Giờ vàng tối\"\n    }\n  ]\n}"
-        },
-        "url": {
-          "raw": "http://localhost:8082/api/pitches",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8082",
-          "path": ["api", "pitches"]
         }
       }
     }

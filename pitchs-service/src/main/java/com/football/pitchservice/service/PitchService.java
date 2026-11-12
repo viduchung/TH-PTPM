@@ -3,6 +3,8 @@ package com.football.pitchservice.service;
 import com.football.pitchservice.dto.*;
 import com.football.pitchservice.entity.Pitch;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 public interface PitchService {
@@ -23,16 +25,19 @@ public interface PitchService {
     // Lấy chi tiết sân theo ID (cho booking-service xem chi tiết)
     PitchResponseDTO getPitchById(Long id);
 
-    // Báo giá cho booking-service
+    // Báo giá cơ bản
     PriceResponseDTO getPitchPrice(Long id);
 
-    // Thêm mới sân bóng (kèm validation)
+    // TH6: API Provider /quote - Tính toán báo giá thuê sân chi tiết kèm giá giờ vàng
+    QuoteResponseDTO calculateQuote(Long pitchId, LocalDate bookingDate, LocalTime startTime, LocalTime endTime);
+
+    // Thêm mới sân bóng (Yêu cầu quyền OWNER / ADMIN)
     PitchResponseDTO createPitch(PitchRequestDTO request);
 
-    // Cập nhật thông tin sân bóng
+    // Cập nhật thông tin sân bóng (Yêu cầu quyền OWNER / ADMIN)
     PitchResponseDTO updatePitch(Long id, PitchRequestDTO request);
 
-    // Xóa sân bóng
+    // Xóa sân bóng (Yêu cầu quyền OWNER / ADMIN)
     void deletePitch(Long id);
 
     // TH4: Thêm khung giờ vàng cho một sân cụ thể
