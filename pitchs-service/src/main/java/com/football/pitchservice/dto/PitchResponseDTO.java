@@ -4,6 +4,9 @@ import com.football.pitchservice.entity.Pitch;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
@@ -19,11 +22,13 @@ public class PitchResponseDTO {
     private String status;
     private String description;
     private boolean available;
+    private List<GoldenHourPriceResponseDTO> goldenHourPrices = new ArrayList<>();
 
     public PitchResponseDTO() {
+        this.goldenHourPrices = new ArrayList<>();
     }
 
-    public PitchResponseDTO(Long id, String name, String type, BigDecimal pricePerHour, String address, String status, String description, boolean available) {
+    public PitchResponseDTO(Long id, String name, String type, BigDecimal pricePerHour, String address, String status, String description, boolean available, List<GoldenHourPriceResponseDTO> goldenHourPrices) {
         this.id = id;
         this.name = name;
         this.type = type;
@@ -32,6 +37,7 @@ public class PitchResponseDTO {
         this.status = status;
         this.description = description;
         this.available = available;
+        this.goldenHourPrices = goldenHourPrices != null ? goldenHourPrices : new ArrayList<>();
     }
 
     // Chuyển đổi từ JPA Entity sang DTO để tránh lộ thực thể CSDL ra ngoài
@@ -39,6 +45,14 @@ public class PitchResponseDTO {
         if (pitch == null) {
             return null;
         }
+
+        List<GoldenHourPriceResponseDTO> ghpList = new ArrayList<>();
+        if (pitch.getGoldenHourPrices() != null) {
+            ghpList = pitch.getGoldenHourPrices().stream()
+                    .map(GoldenHourPriceResponseDTO::fromEntity)
+                    .collect(Collectors.toList());
+        }
+
         return new PitchResponseDTO(
                 pitch.getId(),
                 pitch.getName(),
@@ -47,7 +61,8 @@ public class PitchResponseDTO {
                 pitch.getAddress(),
                 pitch.getStatus(),
                 pitch.getDescription(),
-                "AVAILABLE".equalsIgnoreCase(pitch.getStatus())
+                "AVAILABLE".equalsIgnoreCase(pitch.getStatus()),
+                ghpList
         );
     }
 
@@ -114,5 +129,13 @@ public class PitchResponseDTO {
 
     public void setAvailable(boolean available) {
         this.available = available;
+    }
+
+    public List<GoldenHourPriceResponseDTO> getGoldenHourPrices() {
+        return goldenHourPrices;
+    }
+
+    public void setGoldenHourPrices(List<GoldenHourPriceResponseDTO> goldenHourPrices) {
+        this.goldenHourPrices = goldenHourPrices;
     }
 }

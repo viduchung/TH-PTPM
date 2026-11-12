@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "pitches")
@@ -35,11 +37,26 @@ public class Pitch {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    // Quan hệ One-to-Many: 1 Sân bóng có nhiều Khung giá giờ vàng (TH4)
+    @OneToMany(mappedBy = "pitch", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<GoldenHourPrice> goldenHourPrices = new ArrayList<>();
+
     // Default no-argument constructor required by JPA
     public Pitch() {
     }
 
-    // Constructor with all fields
+    // Constructor with basic fields
+    public Pitch(String name, String type, BigDecimal pricePerHour, String address, String status, String description) {
+        this.name = name;
+        this.type = type;
+        this.pricePerHour = pricePerHour;
+        this.address = address;
+        this.status = status;
+        this.description = description;
+        this.goldenHourPrices = new ArrayList<>();
+    }
+
     public Pitch(Long id, String name, String type, BigDecimal pricePerHour, String address, String status, String description) {
         this.id = id;
         this.name = name;
@@ -48,16 +65,18 @@ public class Pitch {
         this.address = address;
         this.status = status;
         this.description = description;
+        this.goldenHourPrices = new ArrayList<>();
     }
 
-    // Constructor without ID (for creating new pitch)
-    public Pitch(String name, String type, BigDecimal pricePerHour, String address, String status, String description) {
-        this.name = name;
-        this.type = type;
-        this.pricePerHour = pricePerHour;
-        this.address = address;
-        this.status = status;
-        this.description = description;
+    // Helper methods quản lý quan hệ 2 chiều
+    public void addGoldenHourPrice(GoldenHourPrice price) {
+        goldenHourPrices.add(price);
+        price.setPitch(this);
+    }
+
+    public void removeGoldenHourPrice(GoldenHourPrice price) {
+        goldenHourPrices.remove(price);
+        price.setPitch(null);
     }
 
     // Explicit getters and setters
@@ -115,5 +134,13 @@ public class Pitch {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public List<GoldenHourPrice> getGoldenHourPrices() {
+        return goldenHourPrices;
+    }
+
+    public void setGoldenHourPrices(List<GoldenHourPrice> goldenHourPrices) {
+        this.goldenHourPrices = goldenHourPrices;
     }
 }

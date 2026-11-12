@@ -1,12 +1,16 @@
 package com.football.pitchservice.service.impl;
 
-import com.football.pitchservice.dto.PitchRequestDTO;
-import com.football.pitchservice.dto.PitchResponseDTO;
-import com.football.pitchservice.dto.PriceResponseDTO;
+import com.football.pitchservice.dto.*;
+import com.football.pitchservice.entity.GoldenHourPrice;
 import com.football.pitchservice.entity.Pitch;
 import com.football.pitchservice.exception.ResourceNotFoundException;
+import com.football.pitchservice.repository.GoldenHourPriceRepository;
 import com.football.pitchservice.repository.PitchRepository;
 import com.football.pitchservice.service.PitchService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,9 +22,32 @@ import java.util.stream.Collectors;
 public class PitchServiceImpl implements PitchService {
 
     private final PitchRepository pitchRepository;
+    private final GoldenHourPriceRepository goldenHourPriceRepository;
 
-    public PitchServiceImpl(PitchRepository pitchRepository) {
+    public PitchServiceImpl(PitchRepository pitchRepository, GoldenHourPriceRepository goldenHourPriceRepository) {
         this.pitchRepository = pitchRepository;
+        this.goldenHourPriceRepository = goldenHourPriceRepository;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDTO<PitchResponseDTO> searchPitches(
+            String type,
+            String status,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir
+    ) {
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Pitch> pitchPage = pitchRepository.searchPitches(type, status, pageable);
+        Page<PitchResponseDTO> dtoPage = pitchPage.map(PitchResponseDTO::fromEntity);
+
+        return PageResponseDTO.fromPage(dtoPage);
     }
 
     @Override
@@ -74,6 +101,29 @@ public class PitchServiceImpl implements PitchService {
     public void deletePitch(Long id) {
         Pitch existingPitch = findEntityById(id);
         pitchRepository.delete(existingPitch);
+    }
+
+    @Override
+    public GoldenHourPriceResponseDTO addGoldenHourPrice(Long pitchId, GoldenHourPriceRequestDTO request) {
+        Pitch pitch = findEntityById(pitchId);
+        GoldenHourPrice ghp = request.toEntity(pitch);
+        pitch.addGoldenHourPrice(ghp);
+        GoldenHourPrice saved = goldenHourPriceRepository.save(ghp);
+        return GoldenHourPriceResponseDTO.fromEntity(saved);
+    }
+
+    @Override
+    public void deleteGoldenHourPrice(Long pitchId, Long priceId) {
+        Pitch pitch = findEntityById(pitchId);
+        GoldenHourPrice ghp = goldenHourPriceRepository.findById(priceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khung giờ vàng với ID: " + priceId));
+
+        if (!ghp.getPitch().getId().equals(pitch.getId())) {
+            throw new IllegalArgumentException("Khung giờ vàng ID " + priceId + " không thuộc về sân bóng ID " + pitchId);
+        }
+
+        pitch.removeGoldenHourPrice(ghp);
+        goldenHourPriceRepository.delete(ghp);
     }
 
     @Override

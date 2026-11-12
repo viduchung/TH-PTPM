@@ -1,27 +1,35 @@
 {
   "info": {
-    "name": "Pitchs Service (Port 8082) - TH1 & TH2",
-    "_postman_id": "b1a2c3d4-pitch-service-th2-collection",
-    "description": "Bộ API kiểm thử CRUD Sân bóng & Giao tiếp Inter-Service (TH2) - Microservice pitchs-service",
+    "name": "Pitchs Service (Port 8082) - TH1 to TH4",
+    "_postman_id": "b1a2c3d4-pitch-service-th4-collection",
+    "description": "Bộ API kiểm thử đầy đủ từ TH1 đến TH4 (CRUD, Báo giá, Tìm kiếm lọc phân trang, Giờ vàng JPA) - Microservice pitchs-service",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "1. Lấy danh sách sân bóng (DTO)",
+      "name": "1. [TH3] Tìm kiếm & Phân trang sân bóng",
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8082/api/pitches",
+          "raw": "http://localhost:8082/api/pitches/search?type=SAN_7&status=AVAILABLE&page=0&size=5&sortBy=pricePerHour&sortDir=asc",
           "protocol": "http",
           "host": ["localhost"],
           "port": "8082",
-          "path": ["api", "pitches"]
+          "path": ["api", "pitches", "search"],
+          "query": [
+            { "key": "type", "value": "SAN_7" },
+            { "key": "status", "value": "AVAILABLE" },
+            { "key": "page", "value": "0" },
+            { "key": "size", "value": "5" },
+            { "key": "sortBy", "value": "pricePerHour" },
+            { "key": "sortDir", "value": "asc" }
+          ]
         }
       }
     },
     {
-      "name": "2. Xem chi tiết sân bóng (cho booking-service)",
+      "name": "2. Lấy chi tiết sân kèm Giờ vàng (TH4)",
       "request": {
         "method": "GET",
         "header": [],
@@ -35,21 +43,7 @@
       }
     },
     {
-      "name": "3. [TH2] Lấy giá & tình trạng sân (cho booking-service)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8082/api/pitches/1/price",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8082",
-          "path": ["api", "pitches", "1", "price"]
-        }
-      }
-    },
-    {
-      "name": "4. Thêm mới sân bóng",
+      "name": "3. [TH4] Thêm khung giờ vàng cho sân",
       "request": {
         "method": "POST",
         "header": [
@@ -60,7 +54,44 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"Sân 7 Hoàng Gia\",\n  \"type\": \"SAN_7\",\n  \"pricePerHour\": 380000,\n  \"address\": \"Số 10 Phạm Hùng, Nam Từ Liêm, Hà Nội\",\n  \"status\": \"AVAILABLE\",\n  \"description\": \"Mặt sân mới, có khu vực khán đài nhỏ\"\n}"
+          "raw": "{\n  \"dayOfWeek\": \"WEEKEND\",\n  \"startTime\": \"07:00:00\",\n  \"endTime\": \"09:30:00\",\n  \"pricePerHour\": 300000,\n  \"description\": \"Khung giờ sáng cuối tuần\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8082/api/pitches/1/golden-hours",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8082",
+          "path": ["api", "pitches", "1", "golden-hours"]
+        }
+      }
+    },
+    {
+      "name": "4. [TH4] Xóa khung giờ vàng của sân",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8082/api/pitches/1/golden-hours/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8082",
+          "path": ["api", "pitches", "1", "golden-hours", "1"]
+        }
+      }
+    },
+    {
+      "name": "5. [TH3] Test Validation lỗi (400 Bad Request)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"\",\n  \"type\": \"SAN_99\",\n  \"pricePerHour\": -500,\n  \"status\": \"INVALID_STATUS\"\n}"
         },
         "url": {
           "raw": "http://localhost:8082/api/pitches",
@@ -72,9 +103,9 @@
       }
     },
     {
-      "name": "5. Cập nhật thông tin sân bóng",
+      "name": "6. Thêm sân mới hợp lệ",
       "request": {
-        "method": "PUT",
+        "method": "POST",
         "header": [
           {
             "key": "Content-Type",
@@ -83,28 +114,14 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"Sân 5 số 1 - Cỏ nhân tạo (Đã bảo trì xong)\",\n  \"type\": \"SAN_5\",\n  \"pricePerHour\": 280000,\n  \"address\": \"Khu thể thao Bách Khoa, Hai Bà Trưng, Hà Nội\",\n  \"status\": \"AVAILABLE\",\n  \"description\": \"Sân 5 người, cỏ nhân tạo vừa bảo trì\"\n}"
+          "raw": "{\n  \"name\": \"Sân 7 Hoàng Gia VIP\",\n  \"type\": \"SAN_7\",\n  \"pricePerHour\": 420000,\n  \"address\": \"Số 10 Phạm Hùng, Nam Từ Liêm, Hà Nội\",\n  \"status\": \"AVAILABLE\",\n  \"description\": \"Mặt sân mới, cỏ chất lượng cao\",\n  \"goldenHourPrices\": [\n    {\n      \"dayOfWeek\": \"ALL_DAYS\",\n      \"startTime\": \"18:00:00\",\n      \"endTime\": \"21:00:00\",\n      \"pricePerHour\": 550000,\n      \"description\": \"Giờ vàng tối\"\n    }\n  ]\n}"
         },
         "url": {
-          "raw": "http://localhost:8082/api/pitches/1",
+          "raw": "http://localhost:8082/api/pitches",
           "protocol": "http",
           "host": ["localhost"],
           "port": "8082",
-          "path": ["api", "pitches", "1"]
-        }
-      }
-    },
-    {
-      "name": "6. Xóa sân bóng theo ID",
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:8082/api/pitches/1",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "8082",
-          "path": ["api", "pitches", "1"]
+          "path": ["api", "pitches"]
         }
       }
     }
