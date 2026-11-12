@@ -5,6 +5,8 @@ import com.football.pitchservice.service.PitchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,18 +15,40 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping({"/api/pitches", "/api/pitchs", "/api/v1/pitches"})
 @CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})
-@Tag(name = "Pitch Inter-Service Controller (TH1 - TH6)", description = "RESTful APIs quản lý sân bóng, bảo mật JWT RBAC và Provider Báo giá /quote")
+@Tag(name = "Pitch Inter-Service Controller (TH1 - TH7)", description = "RESTful APIs quản lý sân bóng, bảo mật JWT RBAC, Provider Báo giá /quote và Service Discovery")
 public class PitchController {
 
     private final PitchService pitchService;
+    private final Environment environment;
 
-    public PitchController(PitchService pitchService) {
+    @Value("${server.port:8082}")
+    private String configuredPort;
+
+    public PitchController(PitchService pitchService, Environment environment) {
         this.pitchService = pitchService;
+        this.environment = environment;
+    }
+
+    // ============================================================
+    // TH7: KIỂM THỬ INSTANCE & CÂN BẰNG TẢI (LOAD BALANCING)
+    // ============================================================
+    @Operation(summary = "Kiểm tra port và instance đang phục vụ request (TH7 Load Balancing)")
+    @GetMapping("/instance-info")
+    public ResponseEntity<Map<String, Object>> getInstanceInfo() {
+        String activePort = environment.getProperty("local.server.port", configuredPort);
+        Map<String, Object> info = new LinkedHashMap<>();
+        info.put("serviceName", "pitchs-service");
+        info.put("activePort", activePort);
+        info.put("status", "UP");
+        info.put("message", "Request được phục vụ bởi pitchs-service instance tại port: " + activePort);
+        return ResponseEntity.ok(info);
     }
 
     // ============================================================

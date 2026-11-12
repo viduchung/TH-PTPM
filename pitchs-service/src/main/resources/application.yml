@@ -1,16 +1,16 @@
 # ============================================================
 #  PITCHS SERVICE - Football Booking System
-#  Phụ trách: Linh | Port: 8082
+#  Phụ trách: Linh | Port mặc định: 8082 (Hỗ trợ cấu hình linh hoạt)
 # ============================================================
 server:
-  port: 8082
+  port: ${PORT:8082} # Cho phép override port bằng biến môi trường hoặc tham số dòng lệnh (--server.port=...)
 
 spring:
   application:
     name: pitchs-service
 
   # ------------------------------------------------------------
-  #  CSDL: pitch_db (MySQL) - Database-per-Service (TH1/TH4)
+  #  CSDL: pitch_db (MySQL) - Database-per-Service
   #  Nếu chưa bật MySQL, chạy profile H2: -Dspring-boot.run.profiles=h2
   # ------------------------------------------------------------
   datasource:
@@ -35,7 +35,6 @@ spring:
 
 # ------------------------------------------------------------
 #  JWT & BẢO MẬT LIÊN SERVICE (TH5, TH6)
-#  Khóa bí mật đồng bộ với auth-service để giải mã JWT
 # ------------------------------------------------------------
 app:
   jwt:
@@ -44,17 +43,21 @@ app:
     service-key: ${INTERNAL_SERVICE_KEY:FootballInternalSecretServiceKey2026}
 
 # ------------------------------------------------------------
-#  Eureka Service Registry (Chuẩn bị sẵn cho TH7)
+#  EUREKA SERVICE REGISTRY & MULTI-INSTANCE (TH7)
 # ------------------------------------------------------------
 eureka:
   client:
-    enabled: false
+    enabled: ${EUREKA_ENABLED:true} # Bật đăng ký Eureka ở TH7
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
     register-with-eureka: true
     fetch-registry: true
   instance:
     prefer-ip-address: true
+    # Đặt instance-id duy nhất kết hợp random UUID và port để chạy nhiều instance không bị đè nhau
+    instance-id: ${spring.application.name}:${random.value}:${server.port}
+    lease-renewal-interval-in-seconds: 10 # Gửi heartbeat định kỳ 10 giây/lần
+    lease-expiration-duration-in-seconds: 30 # Xóa instance nếu sau 30 giây không nhận được heartbeat
 
 # ------------------------------------------------------------
 #  Swagger UI (OpenAPI): http://localhost:8082/swagger-ui.html
