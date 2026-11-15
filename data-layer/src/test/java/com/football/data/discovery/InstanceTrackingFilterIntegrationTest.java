@@ -45,3 +45,4 @@ public class InstanceTrackingFilterIntegrationTest {
                 .andExpect(jsonPath("$.data.evictionDurationSeconds").value(30));
     }
 }
+

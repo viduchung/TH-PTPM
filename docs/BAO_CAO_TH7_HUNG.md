@@ -152,3 +152,4 @@ Toàn bộ **80 ca kiểm thử** của toàn bộ dự án đã được thực
 | **TH6** | Hợp đồng DTO tích hợp & Nhất quán phân tán | Bảng `idempotency_keys` & `IdempotencyService`, Finite State Machine Validator, Distributed Saga Orchestrator & Bù trừ tự động | 15 tests |
 | **TH7** | Cấu hình nhiều instance & Service discovery | `ServiceDiscoveryProperties`, `InstanceMetadataProvider`, Header `X-Served-By-Instance`, `DistributedConcurrencyLockService`, Docker Compose đa node | 8 tests |
 | **TỔNG** | **HOÀN THÀNH TOÀN DIỆN 7 TUẦN THỰC HÀNH** | **Hệ thống dữ liệu & bảo mật phân tán hoàn chỉnh, sẵn sàng sản xuất** | **80 tests (100% Passed)** |
+

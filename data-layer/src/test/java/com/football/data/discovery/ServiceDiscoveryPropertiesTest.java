@@ -37,3 +37,4 @@ public class ServiceDiscoveryPropertiesTest {
         assertEquals(15, properties.getLeaseExpirationDurationSeconds());
     }
 }
+

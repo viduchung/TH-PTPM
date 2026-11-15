@@ -51,3 +51,4 @@ public class SampleDiscoveryController {
         return ResponseEntity.ok(ApiResponse.success(healthInfo, "Dịch vụ đang hoạt động bình thường"));
     }
 }
+

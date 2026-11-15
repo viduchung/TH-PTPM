@@ -49,3 +49,4 @@ public class ServiceDiscoveryProperties {
     /** Mẫu định danh duy nhất của instance: ${service-name}:${port}:${uuid} */
     private String instanceIdFormat = "%s:%d:%s";
 }
+

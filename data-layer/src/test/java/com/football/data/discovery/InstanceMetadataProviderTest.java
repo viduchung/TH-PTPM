@@ -55,3 +55,4 @@ public class InstanceMetadataProviderTest {
         assertTrue(map.containsKey("activeProfiles"));
     }
 }
+
