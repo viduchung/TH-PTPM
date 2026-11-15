@@ -1,0 +1,130 @@
+# =========================================================================
+# KỊCH BẢN KHỞI CHẠY HỆ THỐNG ĐA INSTANCE (MULTI-INSTANCE DEPLOYMENT)
+# ĐỒ ÁN: FOOTBALL PITCH BOOKING PLATFORM
+# PHỤ TRÁCH HẠ TẦNG & DỮ LIỆU: VŨ ĐỨC HÙNG (feat/hung-data) - TUẦN 7 (TH7)
+# =========================================================================
+
+version: '3.8'
+
+services:
+  # -------------------------------------------------------------
+  # 1. Eureka Discovery Server (Cổng 8761)
+  # -------------------------------------------------------------
+  eureka-server:
+    image: springcloud/eureka
+    container_name: football-eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=false
+      - EUREKA_CLIENT_FETCH_REGISTRY=false
+    networks:
+      - football-network
+
+  # -------------------------------------------------------------
+  # 2. Cơ sở dữ liệu MySQL (Port 3306)
+  # -------------------------------------------------------------
+  mysql-db:
+    image: mysql:8.0
+    container_name: football-mysql-db
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - ../database/init_all_databases.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - football-network
+
+  # -------------------------------------------------------------
+  # 3. Auth Service - Hoàng (Port 8080)
+  # -------------------------------------------------------------
+  auth-service:
+    build:
+      context: ../auth-service
+    container_name: auth-service
+    ports:
+      - "8080:8080"
+    environment:
+      - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/auth_db?useSSL=false
+    depends_on:
+      - eureka-server
+      - mysql-db
+    networks:
+      - football-network
+
+  # -------------------------------------------------------------
+  # 4. Pitchs Service - Linh (Chạy 2 Instance: Port 8082 và Port 8084)
+  # -------------------------------------------------------------
+  pitchs-service-1:
+    build:
+      context: ../pitchs-service
+    container_name: pitchs-service-node1
+    ports:
+      - "8082:8082"
+    environment:
+      - SERVER_PORT=8082
+      - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/pitch_db?useSSL=false
+    depends_on:
+      - eureka-server
+      - mysql-db
+    networks:
+      - football-network
+
+  pitchs-service-2:
+    build:
+      context: ../pitchs-service
+    container_name: pitchs-service-node2
+    ports:
+      - "8084:8084"
+    environment:
+      - SERVER_PORT=8084
+      - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/pitch_db?useSSL=false
+    depends_on:
+      - eureka-server
+      - mysql-db
+    networks:
+      - football-network
+
+  # -------------------------------------------------------------
+  # 5. Booking Service - Nhật (Chạy 2 Instance: Port 8081 và Port 8083)
+  # -------------------------------------------------------------
+  booking-service-1:
+    build:
+      context: ../booking-service
+    container_name: booking-service-node1
+    ports:
+      - "8081:8081"
+    environment:
+      - SERVER_PORT=8081
+      - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/booking_db?useSSL=false
+    depends_on:
+      - eureka-server
+      - mysql-db
+    networks:
+      - football-network
+
+  booking-service-2:
+    build:
+      context: ../booking-service
+    container_name: booking-service-node2
+    ports:
+      - "8083:8083"
+    environment:
+      - SERVER_PORT=8083
+      - EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/booking_db?useSSL=false
+    depends_on:
+      - eureka-server
+      - mysql-db
+    networks:
+      - football-network
+
+networks:
+  football-network:
+    driver: bridge
+

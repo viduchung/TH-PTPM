@@ -1,0 +1,23 @@
+# =========================================================================
+# CẤU HÌNH SERVICE DISCOVERY (EUREKA CLIENT) DÙNG CHUNG - TUẦN 7 (HÙNG)
+# =========================================================================
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+    registry-fetch-interval-seconds: 10
+    healthcheck:
+      enabled: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port:${random.value}}
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+    metadata-map:
+      instanceId: ${eureka.instance.instance-id}
+      zone: primary-zone
+      version: 1.0.0
+

@@ -1,0 +1,41 @@
+# =========================================================================
+# CHUẨN CẤU HÌNH SERVICE DISCOVERY CHO TOÀN BỘ MICROSERVICES (TUẦN 7 - HÙNG)
+# =========================================================================
+# Các thành viên (Hoàng, Linh, Nhật) import hoặc copy nội dung này vào application.yml:
+#
+#   spring:
+#     config:
+#       import: "classpath:eureka-client-common.yml"
+# =========================================================================
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+    registry-fetch-interval-seconds: 10
+    healthcheck:
+      enabled: true
+  instance:
+    prefer-ip-address: true
+    # Đảm bảo instance-id là duy nhất khi scale nhiều instance trên cùng 1 server
+    instance-id: ${spring.application.name}:${server.port:${random.value}}
+    # Tần suất gửi tín hiệu sống Heartbeat (10s)
+    lease-renewal-interval-in-seconds: 10
+    # Thời gian chờ trước khi loại bỏ instance chết (30s)
+    lease-expiration-duration-in-seconds: 30
+    metadata-map:
+      startup-time: ${random.long}
+      zone: vietnam-north
+
+# Cấu hình kiểm tra sức khỏe
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,metrics"
+  endpoint:
+    health:
+      show-details: always
+

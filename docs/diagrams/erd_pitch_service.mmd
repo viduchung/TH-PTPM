@@ -1,0 +1,26 @@
+erDiagram
+    %% CSDL pitch_db: pitchs-service (Port 8082)
+    PITCHES ||--o{ GOLDEN_HOUR_PRICES : "has"
+
+    PITCHES {
+        bigint id PK "Mã sân bóng (Tự tăng)"
+        varchar name "Tên sân"
+        varchar type "Loại sân (SAN_5, SAN_7, SAN_11)"
+        decimal price_per_hour "Giá cơ bản / giờ"
+        varchar address "Địa chỉ sân"
+        varchar status "Trạng thái (AVAILABLE, BOOKED, MAINTENANCE)"
+        text description "Mô tả chi tiết"
+        datetime created_at "Ngày tạo"
+        datetime updated_at "Ngày cập nhật"
+    }
+
+    GOLDEN_HOUR_PRICES {
+        bigint id PK "Mã khung giá (Tự tăng)"
+        bigint pitch_id FK "Mã sân bóng (Khóa ngoại nội bộ)"
+        varchar day_of_week "Ngày áp dụng (ALL_DAYS, WEEKDAY, WEEKEND)"
+        time start_time "Giờ bắt đầu"
+        time end_time "Giờ kết thúc"
+        decimal price_per_hour "Giá giờ vàng / giờ"
+        varchar description "Mô tả khung giờ"
+    }
+
