@@ -86,6 +86,7 @@ public class CommonSecurityConfig {
                                 "/api/auth/**",
                                 "/api/public/**",
                                 "/api/test/**",
+                                "/api/integration/**",
                                 "/h2-console/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",

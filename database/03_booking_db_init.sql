@@ -44,6 +44,26 @@ CREATE TABLE `bookings` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Bảng quản lý đơn đặt sân bóng đá';
 
 -- ------------------------------------------------------------
+-- Bảng: idempotency_keys (Đảm bảo tính bất biến khi tích hợp liên service - TH6 của Hùng)
+-- Ngăn chặn double-booking hoặc double-charge khi client retry hoặc mạng chập chờn
+-- ------------------------------------------------------------
+DROP TABLE IF EXISTS `idempotency_keys`;
+
+CREATE TABLE `idempotency_keys` (
+    `id`              BIGINT        NOT NULL AUTO_INCREMENT COMMENT 'Khóa chính',
+    `idempotency_key` VARCHAR(100)  NOT NULL COMMENT 'UUID hoặc chuỗi định danh duy nhất của request từ client/service',
+    `resource_type`   VARCHAR(50)   NOT NULL COMMENT 'Loại tài nguyên: BOOKING_CREATION, PAYMENT_EXECUTION, SAGA_COMPENSATION',
+    `status`          VARCHAR(30)   NOT NULL DEFAULT 'PROCESSING' COMMENT 'Trạng thái: PROCESSING, COMPLETED, FAILED',
+    `resource_id`     BIGINT        DEFAULT NULL COMMENT 'ID của tài nguyên được tạo (vd: booking_id)',
+    `response_body`   TEXT          DEFAULT NULL COMMENT 'Dữ liệu JSON kết quả trả về đã được cache để replay cho các request lặp',
+    `created_at`      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Thời điểm ghi nhận khóa',
+    `updated_at`      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Thời điểm cập nhật trạng thái',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_idempotency_key` (`idempotency_key`),
+    INDEX `idx_idempotency_status` (`idempotency_key`, `status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Bảng quản lý khóa bất biến chống trùng lặp dữ liệu khi tích hợp';
+
+-- ------------------------------------------------------------
 -- Dữ liệu khởi tạo ban đầu (Seed Data mẫu)
 -- ------------------------------------------------------------
 INSERT INTO `bookings` (`id`, `user_id`, `pitch_id`, `start_time`, `end_time`, `total_price`, `price_per_hour`, `status`, `note`) VALUES
@@ -51,3 +71,6 @@ INSERT INTO `bookings` (`id`, `user_id`, `pitch_id`, `start_time`, `end_time`, `
 (2, 2, 2, '2026-11-21 19:00:00', '2026-11-21 21:00:00', 900000.00, 450000.00, 'CHO_DUYET', 'Thuê sân 7 đá giải văn phòng công ty'),
 (3, 1, 1, '2026-11-22 07:00:00', '2026-11-22 08:30:00', 375000.00, 250000.00, 'TU_CHOI', 'Trùng lịch nội bộ sân, đã từ chối');
 
+INSERT INTO `idempotency_keys` (`id`, `idempotency_key`, `resource_type`, `status`, `resource_id`, `response_body`) VALUES
+(1, '550e8400-e29b-41d4-a716-446655440001', 'BOOKING_CREATION', 'COMPLETED', 1, '{"success":true,"message":"Tạo đơn đặt sân thành công","data":{"id":1}}'),
+(2, '550e8400-e29b-41d4-a716-446655440002', 'BOOKING_CREATION', 'COMPLETED', 2, '{"success":true,"message":"Tạo đơn đặt sân thành công","data":{"id":2}}');
