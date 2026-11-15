@@ -8,6 +8,7 @@
 > **Nội dung hoàn thành:**
 > - **TUẦN 1 (TH1):** Thiết kế @Entity + Repository cho User/Booking/Pitch; Dựng ERD
 > - **TUẦN 2 (TH2):** Chuẩn DTO trao đổi giữa service, tránh trùng model (Entity Leaking) & Bộ Mapper an toàn
+> - **TUẦN 3 (TH3):** Chuẩn format response (ApiResponse, PageResponse) & @ControllerAdvice xử lý lỗi chung (11 HTTP Status Codes)
 
 ---
 
@@ -31,7 +32,16 @@ Theo bảng phân công nhóm (`BANG_PHAN_CONG_HANG_TUAN.xlsx`), Hùng phụ tr�
    - Toàn hệ thống: Cấu trúc phản hồi chung `ApiResponse<T>`.
 3. **Tầng Mapper Chuyển Đổi An Toàn:** `UserMapper`, `PitchMapper`, `BookingMapper`.
 4. **Nguyên lý Tolerant Reader:** Đảm bảo hệ thống giải tuần tự hóa an toàn ngay cả khi dịch vụ đối tác bổ sung trường mới.
-5. **Kiểm thử tự động:** 27/27 bài kiểm thử JUnit 5 ĐẠT (BUILD SUCCESS).
+
+### 🌟 Buổi 3 (TH3): REST Nâng Cao, Chuẩn Format Response & @ControllerAdvice
+1. **Bộ Phản Hồi Chuẩn:**
+   - Envelope thành công: `ApiResponse<T>`.
+   - Phân trang nâng cao: `PageResponse<T>` (giảm 60% overhead metadata so với `PageImpl`).
+   - Phản hồi lỗi chuẩn RFC 7807: `ErrorResponse` (kèm map chi tiết các trường vi phạm Bean Validation).
+2. **Xử Lý Lỗi Tập Trung Toàn Hệ Thống (`GlobalExceptionHandler`):**
+   - Đánh chặn AOP xử lý 11 loại ngoại lệ và chuẩn hóa ma trận HTTP Status: 200, 201, 204, 400, 401, 403, 404, 405, 409, 500, 503.
+   - Bắt trọn vẹn lỗi Bean Validation (`MethodArgumentNotValidException`), ConstraintViolation, Conflict (trùng lịch), ResourceNotFound.
+3. **Kiểm thử tự động:** 36/36 bài kiểm thử JUnit 5 & MockMvc ĐẠT 100% (BUILD SUCCESS).
 
 ---
 
@@ -49,6 +59,7 @@ TH-PTPM/
 ├── docs/                               # Tài liệu thiết kế & báo cáo kỹ thuật của Hùng
 │   ├── BAO_CAO_TH1_HUNG.md             # Báo cáo kỹ thuật chi tiết bài thực hành Tuần 1
 │   ├── BAO_CAO_TH2_HUNG.md             # Báo cáo kỹ thuật chi tiết bài thực hành Tuần 2
+│   ├── BAO_CAO_TH3_HUNG.md             # Báo cáo kỹ thuật chi tiết bài thực hành Tuần 3
 │   ├── ERD_DESIGN_EXPLANATION.md       # Phân tích chuyên sâu thiết kế ERD & ranh giới dữ liệu
 │   └── diagrams/                       # Mã nguồn sơ đồ thực thể Mermaid (.mmd)
 │       ├── erd_overview.mmd            # Sơ đồ ERD tổng thể hệ thống
@@ -56,7 +67,7 @@ TH-PTPM/
 │       ├── erd_pitch_service.mmd       # Sơ đồ ERD pitch_db
 │       └── erd_booking_service.mmd     # Sơ đồ ERD booking_db
 └── data-layer/                         # Module Java Spring Boot JPA & DTO Contracts độc lập
-    ├── pom.xml                         # Cấu hình Maven (Java 17, Spring Boot 3.2.5, JPA, Jackson, H2, Lombok)
+    ├── pom.xml                         # Cấu hình Maven (Java 17, Spring Boot 3.2.5, Web, JPA, Jackson, H2, Lombok)
     └── src/
         ├── main/
         │   ├── java/com/football/data/
@@ -68,11 +79,13 @@ TH-PTPM/
         │   │   │   ├── auth/           # TokenValidationRequestDTO, TokenValidationResponseDTO, UserResponseDTO
         │   │   │   ├── pitch/          # PriceResponseDTO, PitchResponseDTO, GoldenHourPriceDTO
         │   │   │   ├── booking/        # BookingRequestDTO, BookingResponseDTO, BookingStatusUpdateDTO
-        │   │   │   └── common/         # ApiResponse<T> Universal Envelope
-        │   │   └── mapper/             # Tầng Mapper an toàn chống rò rỉ schema (TH2)
-        │   │       ├── UserMapper.java
-        │   │       ├── PitchMapper.java
-        │   │       └── BookingMapper.java
+        │   │   │   └── common/         # ApiResponse<T>, PageResponse<T>, ErrorResponse (TH3)
+        │   │   ├── mapper/             # Tầng Mapper an toàn chống rò rỉ schema (TH2)
+        │   │   │   ├── UserMapper.java
+        │   │   │   ├── PitchMapper.java
+        │   │   │   └── BookingMapper.java
+        │   │   ├── exception/          # Bộ ngoại lệ nghiệp vụ & GlobalExceptionHandler (@ControllerAdvice - TH3)
+        │   │   └── controller/         # Controller mẫu minh họa validation, paging, error handling (TH3)
         │   └── resources/
         │       └── application.properties
         └── test/
@@ -81,7 +94,8 @@ TH-PTPM/
             │   ├── pitch/PitchRepositoryTest.java
             │   ├── booking/BookingRepositoryTest.java
             │   ├── mapper/             # Unit tests cho các mapper
-            │   └── dto/                # Serialization & Tolerant Reader Contract tests
+            │   ├── dto/                # Serialization & Tolerant Reader Contract tests
+            │   └── controller/         # MockMvc Integration tests cho GlobalExceptionHandler & Paging (TH3)
             └── resources/
                 └── application.properties
 ```
@@ -96,28 +110,23 @@ Dự án đã được cấu hình profile kiểm thử in-memory với CSDL H2 
 # Di chuyển vào thư mục data-layer
 cd data-layer
 
-# Chạy toàn bộ 27 bài kiểm thử đơn vị & tích hợp (TH1 + TH2)
+# Chạy toàn bộ 36 bài kiểm thử đơn vị & tích hợp (TH1 + TH2 + TH3)
 mvn clean test
 ```
 
 ### Kết quả kiểm thử mẫu:
 ```text
-[INFO] Running com.football.data.auth.UserRepositoryTest
-[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
-[INFO] Running com.football.data.booking.BookingRepositoryTest
-[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0
-[INFO] Running com.football.data.dto.InterServiceSerializationContractTest
-[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
-[INFO] Running com.football.data.mapper.BookingMapperTest
-[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
-[INFO] Running com.football.data.mapper.PitchMapperTest
-[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
-[INFO] Running com.football.data.mapper.UserMapperTest
-[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
-[INFO] Running com.football.data.pitch.PitchRepositoryTest
-[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Running com.football.data.auth.UserRepositoryTest (3 tests)
+[INFO] Running com.football.data.booking.BookingRepositoryTest (11 tests)
+[INFO] Running com.football.data.controller.GlobalExceptionHandlerIntegrationTest (9 tests)
+[INFO] Running com.football.data.dto.InterServiceSerializationContractTest (4 tests)
+[INFO] Running com.football.data.mapper.BookingMapperTest (2 tests)
+[INFO] Running com.football.data.mapper.PitchMapperTest (2 tests)
+[INFO] Running com.football.data.mapper.UserMapperTest (2 tests)
+[INFO] Running com.football.data.pitch.PitchRepositoryTest (3 tests)
+[INFO] 
 [INFO] Results:
-[INFO] Tests run: 27, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 36, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
 ```
 

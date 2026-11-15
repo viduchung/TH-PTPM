@@ -23,6 +23,12 @@
     </properties>
 
     <dependencies>
+        <!-- Spring Boot Starter Web for RESTful APIs, ControllerAdvice, & Filters -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
         <!-- Spring Data JPA -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
