@@ -15,3 +15,4 @@ public interface GoldenHourPriceRepository extends JpaRepository<GoldenHourPrice
 
     List<GoldenHourPrice> findByPitchId(Long pitchId);
 }
+

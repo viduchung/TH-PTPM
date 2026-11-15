@@ -177,3 +177,4 @@ Hệ thống giải quyết bài toán này ở tầng **Logic ứng dụng & Gi
 
 ## 5. TỔNG KẾT
 Thiết kế ERD phân tán do Hùng phụ trách đã phân định rõ ràng ranh giới nghiệp vụ của từng dịch vụ, đáp ứng 100% chuẩn mực kiến trúc SOA / Microservices hiện đại, loại bỏ nguy cơ Schema Coupling, giúp các thành viên (Hoàng, Linh, Nhật) tự tin phát triển các REST API độc lập trong suốt lộ trình TH1 - TH7.
+

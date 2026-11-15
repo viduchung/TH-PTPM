@@ -428,3 +428,4 @@ $\implies$ **100% (17/17) Test Cases ĐẠT (BUILD SUCCESS)**.
 2. **Kế hoạch cho buổi TH2:**
    * Chuẩn hóa các DTO trao đổi giữa các service (`PitchResponseDTO`, `QuoteResponseDTO`, `UserResponseDTO`) nhằm tránh trùng lặp mô hình thực thể Entity ra ngoài ranh giới API.
    * Hỗ trợ tích hợp WebClient / OpenFeign giao tiếp giữa `booking-service` và `pitchs-service`.
+

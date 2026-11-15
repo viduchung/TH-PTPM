@@ -35,3 +35,4 @@ public interface PitchRepository extends JpaRepository<Pitch, Long> {
                               @Param("status") String status,
                               Pageable pageable);
 }
+

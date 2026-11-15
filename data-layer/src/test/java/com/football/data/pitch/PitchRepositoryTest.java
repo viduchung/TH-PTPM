@@ -109,3 +109,4 @@ public class PitchRepositoryTest {
         assertThat(prices.get(0).getPricePerHour()).isEqualByComparingTo("550000.00");
     }
 }
+

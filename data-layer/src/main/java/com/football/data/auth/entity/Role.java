@@ -32,3 +32,4 @@ public enum Role {
         return name().substring("ROLE_".length());
     }
 }
+

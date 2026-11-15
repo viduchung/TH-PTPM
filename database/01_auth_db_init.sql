@@ -40,3 +40,4 @@ INSERT INTO `users` (`id`, `username`, `password_hash`, `role`, `full_name`, `ph
 (2, 'customer02', '$2a$10$wOqZ3w8/Z2n8wY6mD6LGe.ZgN2/i0iQ.F3FjPZ6v.n6b3q1Z.F.Oe', 'ROLE_CUSTOMER', 'Trần Thị Bình (Khách hàng)', '0909876543', 1),
 (3, 'owner01',    '$2a$10$wOqZ3w8/Z2n8wY6mD6LGe.ZgN2/i0iQ.F3FjPZ6v.n6b3q1Z.F.Oe', 'ROLE_FIELD_OWNER', 'Lê Văn Chủ Sân (Quản lý cụm sân)', '0912345678', 1),
 (4, 'admin01',    '$2a$10$wOqZ3w8/Z2n8wY6mD6LGe.ZgN2/i0iQ.F3FjPZ6v.n6b3q1Z.F.Oe', 'ROLE_ADMIN', 'Phạm Hoàng Admin (Quản trị hệ thống)', '0987654321', 1);
+

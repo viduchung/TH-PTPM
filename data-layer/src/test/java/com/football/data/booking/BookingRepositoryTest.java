@@ -161,3 +161,4 @@ public class BookingRepositoryTest {
         assertThat(conflicts).isEqualTo(0L);
     }
 }
+

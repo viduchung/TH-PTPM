@@ -50,3 +50,4 @@ INSERT INTO `bookings` (`id`, `user_id`, `pitch_id`, `start_time`, `end_time`, `
 (1, 1, 1, '2026-11-20 18:00:00', '2026-11-20 19:30:00', 375000.00, 250000.00, 'DA_DUYET', 'Đội bóng sinh viên K65 Bách Khoa giao hữu'),
 (2, 2, 2, '2026-11-21 19:00:00', '2026-11-21 21:00:00', 900000.00, 450000.00, 'CHO_DUYET', 'Thuê sân 7 đá giải văn phòng công ty'),
 (3, 1, 1, '2026-11-22 07:00:00', '2026-11-22 08:30:00', 375000.00, 250000.00, 'TU_CHOI', 'Trùng lịch nội bộ sân, đã từ chối');
+

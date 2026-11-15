@@ -75,3 +75,4 @@ public class UserRepositoryTest {
         assertThat(admins).hasSize(1);
     }
 }
+

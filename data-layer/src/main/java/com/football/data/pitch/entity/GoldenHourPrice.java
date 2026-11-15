@@ -59,3 +59,4 @@ public class GoldenHourPrice {
         this.description = description;
     }
 }
+

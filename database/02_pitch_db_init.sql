@@ -62,3 +62,4 @@ INSERT INTO `golden_hour_prices` (`pitch_id`, `day_of_week`, `start_time`, `end_
 (1, 'ALL_DAYS', '17:30:00', '20:30:00', 320000.00, 'Khung giờ cao điểm buổi tối các ngày trong tuần'),
 (2, 'WEEKDAY',  '17:00:00', '21:00:00', 550000.00, 'Khung giờ vàng từ thứ 2 đến thứ 6'),
 (2, 'WEEKEND',  '06:00:00', '10:00:00', 500000.00, 'Khung giờ thể thao sáng sớm thứ Bảy & Chủ Nhật');
+
