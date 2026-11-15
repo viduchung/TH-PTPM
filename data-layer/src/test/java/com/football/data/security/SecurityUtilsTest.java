@@ -65,3 +65,4 @@ public class SecurityUtilsTest {
         assertFalse(SecurityUtils.hasAnyRole("CUSTOMER", "GUEST"));
     }
 }
+

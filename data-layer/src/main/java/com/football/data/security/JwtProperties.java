@@ -38,3 +38,4 @@ public class JwtProperties {
     /** Tên Header chứa JWT */
     private String headerString = "Authorization";
 }
+

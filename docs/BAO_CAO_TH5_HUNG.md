@@ -256,3 +256,4 @@ Bộ kiểm thử được thực thi tự động qua Maven Surefire. Tổng c�
 11. [JwtTokenProviderTest.java](file:///c:/Users/viduc/Downloads/TH-PTPM/TH-PTPM/data-layer/src/test/java/com/football/data/security/JwtTokenProviderTest.java): Kiểm thử ký và xác thực token JWT.
 12. [SecurityUtilsTest.java](file:///c:/Users/viduc/Downloads/TH-PTPM/TH-PTPM/data-layer/src/test/java/com/football/data/security/SecurityUtilsTest.java): Kiểm thử tiện ích trích xuất người dùng.
 13. [CommonSecurityIntegrationTest.java](file:///c:/Users/viduc/Downloads/TH-PTPM/TH-PTPM/data-layer/src/test/java/com/football/data/security/CommonSecurityIntegrationTest.java): Kiểm thử tích hợp toàn diện chuỗi lọc bảo mật.
+

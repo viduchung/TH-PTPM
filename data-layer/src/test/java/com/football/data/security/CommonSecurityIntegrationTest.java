@@ -141,3 +141,4 @@ public class CommonSecurityIntegrationTest {
                 .andExpect(jsonPath("$.data.roles", hasItem("ROLE_ADMIN")));
     }
 }
+
