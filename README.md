@@ -10,6 +10,9 @@
 > - **TUẦN 2 (TH2):** Chuẩn DTO trao đổi giữa service, tránh trùng model (Entity Leaking) & Bộ Mapper an toàn
 > - **TUẦN 3 (TH3):** Chuẩn format response (ApiResponse, PageResponse) & @ControllerAdvice xử lý lỗi chung (11 HTTP Status Codes)
 > - **TUẦN 4 (TH4):** Chuẩn Database-per-Service (4 CSDL độc lập), Quản trị giao dịch @Transactional & Script init SQL 4 DB
+> - **TUẦN 5 (TH5):** Chuẩn common-security dùng chung, Stateless JWT (JJWT 0.12.6), UserPrincipal nạp từ Claims không query CSDL, Phân quyền RBAC
+> - **TUẦN 6 (TH6):** Hợp đồng DTO tích hợp liên dịch vụ, Khóa bất biến Idempotency Key, State Machine Validator & Distributed Saga Bù trừ
+> - **TUẦN 7 (TH7):** Cấu hình nhiều instance, Chuẩn hóa Service Discovery (Eureka), Khóa phân tán Concurrency Lock & Docker Compose đa node
 
 ---
 
@@ -55,6 +58,25 @@ Theo bảng phân công nhóm (`BANG_PHAN_CONG_HANG_TUAN.xlsx`), Hùng phụ tr�
    - Mức cô lập `READ_COMMITTED` chống Dirty Read, `readOnly = true` tối ưu hóa hiệu năng Hibernate.
 3. **Bộ Script SQL DDL 4 DB:** 5 tệp tin SQL tại `database/` (bao gồm `04_payment_db_init.sql` và `init_all_databases.sql`).
 4. **Kiểm thử tự động:** 41/41 bài kiểm thử JUnit 5, JPA & MockMvc ĐẠT 100% (BUILD SUCCESS).
+
+### 🌟 Buổi 5 (TH5): Chuẩn Common-Security Dùng Chung, JWT & Phân Quyền RBAC
+1. **Kiến trúc Stateless Security:** Đóng gói thư viện dùng chung `com.football.data.security` sử dụng JJWT 0.12.6 ký số HMAC-SHA256 256-bit.
+2. **UserPrincipal (Tự phục hồi Context):** Cài đặt `UserDetails`, Factory `fromClaims` tái tạo đầy đủ thông tin người dùng (`id`, `username`, `roles`) trực tiếp từ JWT **không cần truy vấn ngược lại CSDL `auth_db`**.
+3. **Bộ lọc JwtAuthenticationFilter & Handlers:** Tự động bắt Bearer token; chuyển đổi toàn bộ lỗi 401 Unauthorized và 403 Forbidden sang JSON chuẩn RFC 7807 (`ErrorResponse`).
+4. **Tiện ích SecurityUtils:** Cung cấp hàm tĩnh Thread-safe `getCurrentUserId()`, `getCurrentUsername()`, `hasRole()` giúp Nhật (`booking-service`) lấy `userId` chính chủ, loại bỏ rủi ro giả mạo ID.
+
+### 🌟 Buổi 6 (TH6): Hợp Đồng DTO Tích Hợp & Đảm Bảo Nhất Quán Dữ Liệu Phân Tán
+1. **Khóa Bất Biến (Idempotency Key):** Bảng `idempotency_keys` và `IdempotencyService` theo chuẩn Stripe/PayPal, lưu trữ phản hồi JSON để replay ngay khi nhận request trùng lặp, chống double-booking và double-charge khi rớt mạng.
+2. **Máy Trạng Thái Hữu Hạn (`BookingStateTransitionValidator`):** Quản lý nghiêm ngặt quy tắc chuyển đổi trạng thái, khóa cứng Terminal States (`TU_CHOI`, `DA_HUY`), ngăn chặn bất nhất trạng thái phân tán.
+3. **Điều Phối Saga & Bù Trừ Dữ Liệu (`DistributedBookingSagaOrchestrator`):** Điều phối giao dịch phân tán 3 bên (Pitch -> Booking -> Payment), tự động kích hoạt Compensating Transaction chuyển đơn về `TU_CHOI` khi thanh toán thất bại.
+4. **Hợp đồng DTO tích hợp chuyên dụng:** Gói `com.football.data.dto.integration` đảm bảo Tolerant Reader Pattern.
+
+### 🌟 Buổi 7 (TH7): Cấu Hình Nhiều Instance & Chuẩn Hóa Service Discovery
+1. **Chuẩn hóa Service Discovery (Eureka Client):** Rút ngắn nhịp tim Heartbeat xuống 10s và thời gian trục xuất xuống 30s (`ServiceDiscoveryProperties`), hỗ trợ phát hiện sự cố nhanh chóng.
+2. **Kiểm chứng Cân Bằng Tải:** `InstanceTrackingFilter` tự động đóng dấu Header `X-Served-By-Instance` và `X-Service-Name` vào mọi response để tester thấy request luân phiên qua các node (vd: 8081 -> 8083 -> 8081).
+3. **Khóa Phân Tán Chống Tranh Chấp Lịch (`DistributedConcurrencyLockService`):** Tuần tự hóa các thao tác kiểm tra trùng lịch theo `pitchId`, giải quyết triệt để Race Condition khi nhiều instance cùng nhận request đặt cùng 1 sân tại cùng 1 mili-giây.
+4. **Kịch bản Docker Compose Đa Instance:** Cung cấp `docker-compose-multi-instance.yml` triển khai đồng thời Eureka + MySQL + 2 instance `pitchs-service` + 2 instance `booking-service`.
+5. **Kiểm thử tự động toàn diện:** 80/80 bài kiểm thử JUnit 5, JPA, MockMvc & Concurrency ĐẠT 100% (BUILD SUCCESS).
 
 ---
 
@@ -118,13 +140,21 @@ TH-PTPM/
         │   │   ├── consistency/        # Nhất quán dữ liệu phân tán & State Machine (TH6)
         │   │   │   ├── BookingStateTransitionValidator.java
         │   │   │   └── DistributedBookingSagaOrchestrator.java
+        │   │   ├── concurrency/        # Khóa phân tán chống tranh chấp lịch đa instance (TH7)
+        │   │   │   └── DistributedConcurrencyLockService.java
+        │   │   ├── discovery/          # Chuẩn hóa Service Discovery Eureka & Tracking Header (TH7)
+        │   │   │   ├── ServiceDiscoveryProperties.java
+        │   │   │   ├── InstanceMetadataProvider.java
+        │   │   │   └── InstanceTrackingFilter.java
         │   │   ├── dto/integration/    # Hợp đồng DTO tích hợp liên dịch vụ (TH6)
-        │   │   └── controller/         # Controller mẫu minh họa REST, Paging, Security & Saga (TH3, TH5, TH6)
+        │   │   └── controller/         # Controller mẫu minh họa REST, Paging, Security, Saga & Discovery (TH3, TH5, TH6, TH7)
         │   │       ├── SampleRestValidationController.java
         │   │       ├── SampleSecuredController.java
-        │   │       └── SampleIntegrationController.java
+        │   │       ├── SampleIntegrationController.java
+        │   │       └── SampleDiscoveryController.java
         │   └── resources/
-        │       └── application.properties
+        │       ├── application.properties
+        │       └── application-eureka.yml
         └── test/
             ├── java/com/football/data/
             │   ├── auth/UserRepositoryTest.java
@@ -137,7 +167,9 @@ TH-PTPM/
             │   ├── controller/         # MockMvc Integration tests cho GlobalExceptionHandler & Paging (TH3)
             │   ├── security/           # Unit & Integration tests cho JWT, SecurityUtils, RBAC (TH5)
             │   ├── idempotency/        # Kiểm thử tính bất biến Idempotency (TH6)
-            │   └── consistency/        # Kiểm thử Saga Orchestrator & State Machine (TH6)
+            │   ├── consistency/        # Kiểm thử Saga Orchestrator & State Machine (TH6)
+            │   ├── concurrency/        # Kiểm thử Race Condition tranh chấp đa instance (TH7)
+            │   └── discovery/          # Kiểm thử Discovery Properties & Tracking Filter (TH7)
             └── resources/
                 └── application.properties
 ```
@@ -152,7 +184,7 @@ Dự án đã được cấu hình profile kiểm thử in-memory với CSDL H2 
 # Di chuyển vào thư mục data-layer
 cd data-layer
 
-# Chạy toàn bộ 72 bài kiểm thử đơn vị & tích hợp (TH1 + TH2 + TH3 + TH4 + TH5 + TH6)
+# Chạy toàn bộ 80 bài kiểm thử đơn vị & tích hợp (TH1 + TH2 + TH3 + TH4 + TH5 + TH6 + TH7)
 mvn clean test
 ```
 
@@ -175,14 +207,13 @@ mvn clean test
 [INFO] Running com.football.data.idempotency.service.IdempotencyServiceTest (5 tests)
 [INFO] Running com.football.data.consistency.BookingStateTransitionValidatorTest (3 tests)
 [INFO] Running com.football.data.consistency.DistributedBookingSagaOrchestratorTest (4 tests)
+[INFO] Running com.football.data.discovery.ServiceDiscoveryPropertiesTest (2 tests)
+[INFO] Running com.football.data.discovery.InstanceMetadataProviderTest (3 tests)
+[INFO] Running com.football.data.discovery.InstanceTrackingFilterIntegrationTest (2 tests)
+[INFO] Running com.football.data.concurrency.MultiInstanceConcurrencyRaceConditionTest (1 test)
 [INFO] 
 [INFO] Results:
-[INFO] Tests run: 72, Failures: 0, Errors: 0, Skipped: 0
-[INFO] BUILD SUCCESS
-[INFO] 
-[INFO] Results:
-[INFO] Tests run: 56, Failures: 0, Errors: 0, Skipped: 0
-[INFO] BUILD SUCCESS
+[INFO] Tests run: 80, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
 ```
 
@@ -193,14 +224,27 @@ mvn clean test
 1. Mở công cụ quản trị MySQL (**phpMyAdmin, DBeaver, MySQL Workbench, hoặc CLI**).
 2. Mở file `database/init_all_databases.sql`.
 3. Bấm **Execute** (hoặc chạy lệnh: `mysql -u root -p < database/init_all_databases.sql`).
-4. Hệ thống sẽ tự động khởi tạo 3 cơ sở dữ liệu:
+4. Hệ thống sẽ tự động khởi tạo 4 cơ sở dữ liệu độc lập:
    - `auth_db`: Gồm bảng `users` cùng 4 tài khoản mẫu.
    - `pitch_db`: Gồm bảng `pitches`, `golden_hour_prices` cùng 4 sân bóng mẫu.
-   - `booking_db`: Gồm bảng `bookings` cùng 3 đơn đặt sân mẫu.
+   - `booking_db`: Gồm bảng `bookings` và `idempotency_keys` cùng dữ liệu mẫu.
+   - `payment_db`: Gồm bảng `payments` cùng 3 giao dịch mẫu.
 
 ---
 
-## 5. THÔNG TIN LIÊN HỆ & BẢN QUYỀN
+## 5. DANH SÁCH BÁO CÁO KỸ THUẬT CỦA HÙNG (TH1 - TH7)
+
+1. [BAO_CAO_TH1_HUNG.md](docs/BAO_CAO_TH1_HUNG.md): Thiết kế ERD Database-per-Service, JPA Entity & Repository, Thuật toán chống trùng lịch toán học.
+2. [BAO_CAO_TH2_HUNG.md](docs/BAO_CAO_TH2_HUNG.md): Chuẩn hóa Hợp đồng DTO, Giải quyết Anti-pattern Shared Entity, Mappers & Jackson Tolerant Reader.
+3. [BAO_CAO_TH3_HUNG.md](docs/BAO_CAO_TH3_HUNG.md): Response Envelopes (`ApiResponse`, `PageResponse`), RFC 7807 `ErrorResponse`, `GlobalExceptionHandler` 11 mã lỗi.
+4. [BAO_CAO_TH4_HUNG.md](docs/BAO_CAO_TH4_HUNG.md): Database-per-Service 4 CSDL độc lập, Quản lý Transaction phân tán `@Transactional` Commit & Rollback.
+5. [BAO_CAO_TH5_HUNG.md](docs/BAO_CAO_TH5_HUNG.md): Chuẩn Common Security dùng chung, Stateless JWT JJWT 0.12.6, UserPrincipal nạp từ Claims, Phân quyền RBAC.
+6. [BAO_CAO_TH6_HUNG.md](docs/BAO_CAO_TH6_HUNG.md): Hợp đồng DTO tích hợp, Bảng `idempotency_keys` & `IdempotencyService`, Finite State Machine Validator, Distributed Saga Orchestrator & Bù trừ tự động.
+7. [BAO_CAO_TH7_HUNG.md](docs/BAO_CAO_TH7_HUNG.md): Chuẩn hóa Service Discovery, Multi-instance configuration, Distributed Concurrency Lock, Header `X-Served-By-Instance`, Docker Compose đa node.
+
+---
+
+## 6. THÔNG TIN LIÊN HỆ & BẢN QUYỀN
 - **Tác giả:** Vũ Đức Hùng (`viduchung`)
 - **Đồ án:** Thực hành Phát triển phần mềm hướng dịch vụ (TH-PTPM)
 - **Repository:** https://github.com/viduchung/TH-PTPM.git

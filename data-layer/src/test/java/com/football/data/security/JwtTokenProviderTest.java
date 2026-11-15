@@ -92,8 +92,11 @@ public class JwtTokenProviderTest {
     void testTamperedToken_ValidationFails() {
         String token = jwtTokenProvider.generateToken(404L, "valid_user", Role.ROLE_CUSTOMER);
 
-        // Giả mạo phần chữ ký (thay đổi ký tự cuối cùng)
-        String tamperedToken = token.substring(0, token.length() - 2) + "xx";
+        String[] parts = token.split("\\.");
+        assertEquals(3, parts.length);
+
+        // Làm sai lệch chữ ký số (Signature Mismatch)
+        String tamperedToken = parts[0] + "." + parts[1] + "." + "InvalidSignature1234567890abcdef";
 
         assertFalse(jwtTokenProvider.validateToken(tamperedToken));
     }

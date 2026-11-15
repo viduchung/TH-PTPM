@@ -45,6 +45,7 @@ public class DistributedBookingSagaOrchestrator {
     private final PaymentRepository paymentRepository;
     private final IdempotencyService idempotencyService;
     private final BookingStateTransitionValidator stateValidator;
+    private final com.football.data.concurrency.DistributedConcurrencyLockService concurrencyLockService;
 
     /**
      * Thực thi quy trình Saga với cơ chế Idempotency
@@ -56,7 +57,10 @@ public class DistributedBookingSagaOrchestrator {
                 idempotencyKey,
                 "BOOKING_SAGA",
                 BookingResponseDTO.class,
-                () -> doBookingSaga(request, paymentMethod)
+                () -> concurrencyLockService.executeWithPitchLock(
+                        request.getPitchId(),
+                        () -> doBookingSaga(request, paymentMethod)
+                )
         );
     }
 
