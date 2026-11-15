@@ -10,7 +10,6 @@ import java.util.List;
 @Entity
 @Table(name = "pitches")
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Pitch {

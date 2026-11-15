@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
 public class PitchResponseDTO {
 
@@ -22,6 +20,7 @@ public class PitchResponseDTO {
     private String status;
     private String description;
     private boolean available;
+    @Builder.Default
     private List<GoldenHourPriceResponseDTO> goldenHourPrices = new ArrayList<>();
 
     public PitchResponseDTO() {

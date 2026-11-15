@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
 public class PitchRequestDTO {
 
@@ -35,6 +33,7 @@ public class PitchRequestDTO {
     private String description;
 
     @Valid
+    @Builder.Default
     private List<GoldenHourPriceRequestDTO> goldenHourPrices = new ArrayList<>();
 
     public PitchRequestDTO() {

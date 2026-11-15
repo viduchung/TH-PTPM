@@ -8,8 +8,6 @@ import java.math.BigDecimal;
 import java.time.LocalTime;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
 public class GoldenHourPriceResponseDTO {
 

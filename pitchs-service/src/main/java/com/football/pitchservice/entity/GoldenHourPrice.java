@@ -9,8 +9,6 @@ import java.time.LocalTime;
 @Entity
 @Table(name = "golden_hour_prices")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
 public class GoldenHourPrice {
 
