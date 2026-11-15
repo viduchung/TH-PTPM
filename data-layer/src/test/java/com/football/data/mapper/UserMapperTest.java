@@ -41,3 +41,4 @@ public class UserMapperTest {
         assertThat(UserMapper.toDTO(null)).isNull();
     }
 }
+

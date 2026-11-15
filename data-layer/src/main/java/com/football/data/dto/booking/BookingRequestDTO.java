@@ -32,3 +32,4 @@ public class BookingRequestDTO {
 
     private String note;
 }
+

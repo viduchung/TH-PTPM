@@ -29,3 +29,4 @@ public class PriceResponseDTO {
     private String status;
     private boolean available;
 }
+

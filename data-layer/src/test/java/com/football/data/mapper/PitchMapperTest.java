@@ -69,3 +69,4 @@ public class PitchMapperTest {
         assertThat(priceDto.getCurrency()).isEqualTo("VND");
     }
 }
+

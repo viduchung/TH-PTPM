@@ -66,3 +66,4 @@ public class BookingMapperTest {
         assertThat(entity.getStatus()).isEqualTo(BookingStatus.CHO_DUYET);
     }
 }
+

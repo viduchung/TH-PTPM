@@ -23,3 +23,4 @@ public class GoldenHourPriceDTO {
     private BigDecimal pricePerHour;
     private String description;
 }
+

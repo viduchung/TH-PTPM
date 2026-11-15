@@ -32,3 +32,4 @@ public class PitchResponseDTO {
     @Builder.Default
     private List<GoldenHourPriceDTO> goldenHourPrices = new ArrayList<>();
 }
+

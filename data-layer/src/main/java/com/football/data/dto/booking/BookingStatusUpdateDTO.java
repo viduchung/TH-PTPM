@@ -19,3 +19,4 @@ public class BookingStatusUpdateDTO {
 
     private String reason; // Lý do từ chối hoặc hủy đơn
 }
+

@@ -296,3 +296,4 @@ $\implies$ **Toàn bộ 27/27 Test Cases ĐẠT 100% (BUILD SUCCESS)**.
 2. **Kế hoạch cho buổi TH3:**
    * Tiếp tục chuẩn hóa định dạng phản hồi dữ liệu và cơ chế bắt lỗi tập trung `@ControllerAdvice`.
    * Hỗ trợ Nhật và Linh xây dựng chuẩn Response lỗi chung (HTTP 400 Validation, 401 Unauthorized, 403 Forbidden, 404 Not Found, 409 Conflict).
+

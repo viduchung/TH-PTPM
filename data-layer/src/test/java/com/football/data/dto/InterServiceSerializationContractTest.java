@@ -113,3 +113,4 @@ public class InterServiceSerializationContractTest {
         assertThat(deserialized.isAvailable()).isTrue();
     }
 }
+

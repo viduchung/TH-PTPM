@@ -25,3 +25,4 @@ public class UserResponseDTO {
     private String phone;
     private boolean active;
 }
+

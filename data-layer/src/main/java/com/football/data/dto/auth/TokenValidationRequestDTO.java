@@ -17,3 +17,4 @@ public class TokenValidationRequestDTO {
     @NotBlank(message = "Token không được để trống")
     private String token;
 }
+
