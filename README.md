@@ -102,7 +102,18 @@ TH-PTPM/
         │   │   │   ├── PitchMapper.java
         │   │   │   └── BookingMapper.java
         │   │   ├── exception/          # Bộ ngoại lệ nghiệp vụ & GlobalExceptionHandler (@ControllerAdvice - TH3)
-        │   │   └── controller/         # Controller mẫu minh họa validation, paging, error handling (TH3)
+        │   │   ├── security/           # Chuẩn Common Security dùng chung, JWT Filter & RBAC (TH5)
+        │   │   │   ├── JwtProperties.java
+        │   │   │   ├── UserPrincipal.java
+        │   │   │   ├── JwtTokenProvider.java
+        │   │   │   ├── JwtAuthenticationFilter.java
+        │   │   │   ├── JwtAuthenticationEntryPoint.java
+        │   │   │   ├── CustomAccessDeniedHandler.java
+        │   │   │   ├── SecurityUtils.java
+        │   │   │   └── CommonSecurityConfig.java
+        │   │   └── controller/         # Controller mẫu minh họa REST, Paging, và Security RBAC (TH3, TH5)
+        │   │       ├── SampleRestValidationController.java
+        │   │       └── SampleSecuredController.java
         │   └── resources/
         │       └── application.properties
         └── test/
@@ -114,7 +125,11 @@ TH-PTPM/
             │   ├── payment/PaymentRepositoryTest.java                # Kiểm thử CSDL payment_db (TH4)
             │   ├── mapper/             # Unit tests cho các mapper
             │   ├── dto/                # Serialization & Tolerant Reader Contract tests
-            │   └── controller/         # MockMvc Integration tests cho GlobalExceptionHandler & Paging (TH3)
+            │   ├── controller/         # MockMvc Integration tests cho GlobalExceptionHandler & Paging (TH3)
+            │   └── security/           # Unit & Integration tests cho JWT, SecurityUtils, RBAC (TH5)
+            │       ├── JwtTokenProviderTest.java
+            │       ├── SecurityUtilsTest.java
+            │       └── CommonSecurityIntegrationTest.java
             └── resources/
                 └── application.properties
 ```
@@ -129,25 +144,29 @@ Dự án đã được cấu hình profile kiểm thử in-memory với CSDL H2 
 # Di chuyển vào thư mục data-layer
 cd data-layer
 
-# Chạy toàn bộ 41 bài kiểm thử đơn vị & tích hợp (TH1 + TH2 + TH3 + TH4)
+# Chạy toàn bộ 56 bài kiểm thử đơn vị & tích hợp (TH1 + TH2 + TH3 + TH4 + TH5)
 mvn clean test
 ```
 
 ### Kết quả kiểm thử mẫu:
 ```text
-[INFO] Running com.football.data.auth.UserRepositoryTest (3 tests)
-[INFO] Running com.football.data.booking.BookingRepositoryTest (11 tests)
-[INFO] Running com.football.data.booking.service.BookingTransactionalServiceTest (4 tests)
+[INFO] Running com.football.data.auth.UserRepositoryTest (5 tests)
+[INFO] Running com.football.data.pitch.PitchRepositoryTest (3 tests)
+[INFO] Running com.football.data.payment.PaymentRepositoryTest (1 test)
+[INFO] Running com.football.data.booking.BookingRepositoryTest (10 tests)
+[INFO] Running com.football.data.booking.service.BookingTransactionalServiceTest (5 tests)
 [INFO] Running com.football.data.controller.GlobalExceptionHandlerIntegrationTest (9 tests)
 [INFO] Running com.football.data.dto.InterServiceSerializationContractTest (4 tests)
 [INFO] Running com.football.data.mapper.BookingMapperTest (2 tests)
-[INFO] Running com.football.data.mapper.PitchMapperTest (2 tests)
-[INFO] Running com.football.data.mapper.UserMapperTest (2 tests)
-[INFO] Running com.football.data.payment.PaymentRepositoryTest (1 test)
-[INFO] Running com.football.data.pitch.PitchRepositoryTest (3 tests)
+[INFO] Running com.football.data.mapper.PitchMapperTest (1 test)
+[INFO] Running com.football.data.mapper.UserMapperTest (1 test)
+[INFO] Running com.football.data.security.JwtTokenProviderTest (5 tests)
+[INFO] Running com.football.data.security.SecurityUtilsTest (2 tests)
+[INFO] Running com.football.data.security.CommonSecurityIntegrationTest (8 tests)
 [INFO] 
 [INFO] Results:
-[INFO] Tests run: 41, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 56, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
 [INFO] BUILD SUCCESS
 ```
 

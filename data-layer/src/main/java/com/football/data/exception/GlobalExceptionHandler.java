@@ -149,12 +149,12 @@ public class GlobalExceptionHandler {
     /**
      * 7. Xử lý lỗi chưa xác thực hoặc token hết hạn -> 401 Unauthorized
      */
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<ErrorResponse> handleUnauthorized(UnauthorizedException ex, HttpServletRequest request) {
+    @ExceptionHandler({UnauthorizedException.class, org.springframework.security.core.AuthenticationException.class})
+    public ResponseEntity<ErrorResponse> handleUnauthorized(Exception ex, HttpServletRequest request) {
         ErrorResponse response = ErrorResponse.of(
                 HttpStatus.UNAUTHORIZED.value(),
                 "Unauthorized",
-                ex.getMessage(),
+                ex.getMessage() != null ? ex.getMessage() : "Chưa xác thực hoặc token không hợp lệ",
                 request.getRequestURI(),
                 "ERR_UNAUTHORIZED"
         );
@@ -164,12 +164,12 @@ public class GlobalExceptionHandler {
     /**
      * 8. Xử lý lỗi từ chối truy cập / không đủ thẩm quyền -> 403 Forbidden
      */
-    @ExceptionHandler(ForbiddenException.class)
-    public ResponseEntity<ErrorResponse> handleForbidden(ForbiddenException ex, HttpServletRequest request) {
+    @ExceptionHandler({ForbiddenException.class, org.springframework.security.access.AccessDeniedException.class})
+    public ResponseEntity<ErrorResponse> handleForbidden(Exception ex, HttpServletRequest request) {
         ErrorResponse response = ErrorResponse.of(
                 HttpStatus.FORBIDDEN.value(),
                 "Forbidden",
-                ex.getMessage(),
+                ex.getMessage() != null ? ex.getMessage() : "Bạn không có quyền truy cập tài nguyên này",
                 request.getRequestURI(),
                 "ERR_FORBIDDEN"
         );
