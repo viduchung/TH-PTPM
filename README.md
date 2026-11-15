@@ -9,6 +9,7 @@
 > - **TUẦN 1 (TH1):** Thiết kế @Entity + Repository cho User/Booking/Pitch; Dựng ERD
 > - **TUẦN 2 (TH2):** Chuẩn DTO trao đổi giữa service, tránh trùng model (Entity Leaking) & Bộ Mapper an toàn
 > - **TUẦN 3 (TH3):** Chuẩn format response (ApiResponse, PageResponse) & @ControllerAdvice xử lý lỗi chung (11 HTTP Status Codes)
+> - **TUẦN 4 (TH4):** Chuẩn Database-per-Service (4 CSDL độc lập), Quản trị giao dịch @Transactional & Script init SQL 4 DB
 
 ---
 
@@ -41,7 +42,19 @@ Theo bảng phân công nhóm (`BANG_PHAN_CONG_HANG_TUAN.xlsx`), Hùng phụ tr�
 2. **Xử Lý Lỗi Tập Trung Toàn Hệ Thống (`GlobalExceptionHandler`):**
    - Đánh chặn AOP xử lý 11 loại ngoại lệ và chuẩn hóa ma trận HTTP Status: 200, 201, 204, 400, 401, 403, 404, 405, 409, 500, 503.
    - Bắt trọn vẹn lỗi Bean Validation (`MethodArgumentNotValidException`), ConstraintViolation, Conflict (trùng lịch), ResourceNotFound.
-3. **Kiểm thử tự động:** 36/36 bài kiểm thử JUnit 5 & MockMvc ĐẠT 100% (BUILD SUCCESS).
+
+### 🌟 Buổi 4 (TH4): MySQL / JPA (CSDL Thật), Database-per-Service & @Transactional
+1. **Chuẩn hóa 4 CSDL Độc lập (Database-per-Service):**
+   - `auth_db`: port 8080 (Hoàng) - bảng `users`.
+   - `pitch_db`: port 8082 (Linh) - bảng `pitches`, `golden_hour_prices`.
+   - `booking_db`: port 8081/8083 (Nhật) - bảng `bookings`.
+   - `payment_db`: port 8084 (Hùng) - bảng `payments`.
+2. **Quản trị Giao dịch ACID (@Transactional):**
+   - Cài đặt `BookingTransactionalService`: Rollback tự động khi có xung đột trùng lịch thi đấu (`ConflictException`).
+   - Giao dịch nguyên tử: Thanh toán và duyệt đơn cùng commit hoặc cùng rollback.
+   - Mức cô lập `READ_COMMITTED` chống Dirty Read, `readOnly = true` tối ưu hóa hiệu năng Hibernate.
+3. **Bộ Script SQL DDL 4 DB:** 5 tệp tin SQL tại `database/` (bao gồm `04_payment_db_init.sql` và `init_all_databases.sql`).
+4. **Kiểm thử tự động:** 41/41 bài kiểm thử JUnit 5, JPA & MockMvc ĐẠT 100% (BUILD SUCCESS).
 
 ---
 
@@ -50,16 +63,18 @@ Theo bảng phân công nhóm (`BANG_PHAN_CONG_HANG_TUAN.xlsx`), Hùng phụ tr�
 ```text
 TH-PTPM/
 ├── BANG_PHAN_CONG_HANG_TUAN.xlsx       # Bảng phân công nhiệm vụ chi tiết nhóm TH1 - TH7
-├── README.md                           # Hướng dẫn tổng quan & kết quả TH1 - TH2 của Hùng
-├── database/                           # Bộ script SQL khởi tạo CSDL theo chuẩn Database-per-Service
+├── README.md                           # Hướng dẫn tổng quan & kết quả TH1 - TH4 của Hùng
+├── database/                           # Bộ script SQL khởi tạo 4 CSDL theo chuẩn Database-per-Service
 │   ├── 01_auth_db_init.sql             # Khởi tạo auth_db và bảng users (Hoàng - Port 8080)
 │   ├── 02_pitch_db_init.sql            # Khởi tạo pitch_db và bảng pitches, golden_hour_prices (Linh - Port 8082)
 │   ├── 03_booking_db_init.sql          # Khởi tạo booking_db và bảng bookings (Nhật - Port 8081/8083)
-│   └── init_all_databases.sql          # Script gộp khởi tạo toàn bộ 3 database trên MySQL / phpMyAdmin
+│   ├── 04_payment_db_init.sql          # Khởi tạo payment_db và bảng payments (Hùng - Port 8084 - TH4)
+│   └── init_all_databases.sql          # Script gộp khởi tạo toàn bộ 4 database trên MySQL / phpMyAdmin
 ├── docs/                               # Tài liệu thiết kế & báo cáo kỹ thuật của Hùng
 │   ├── BAO_CAO_TH1_HUNG.md             # Báo cáo kỹ thuật chi tiết bài thực hành Tuần 1
 │   ├── BAO_CAO_TH2_HUNG.md             # Báo cáo kỹ thuật chi tiết bài thực hành Tuần 2
 │   ├── BAO_CAO_TH3_HUNG.md             # Báo cáo kỹ thuật chi tiết bài thực hành Tuần 3
+│   ├── BAO_CAO_TH4_HUNG.md             # Báo cáo kỹ thuật chi tiết bài thực hành Tuần 4
 │   ├── ERD_DESIGN_EXPLANATION.md       # Phân tích chuyên sâu thiết kế ERD & ranh giới dữ liệu
 │   └── diagrams/                       # Mã nguồn sơ đồ thực thể Mermaid (.mmd)
 │       ├── erd_overview.mmd            # Sơ đồ ERD tổng thể hệ thống
@@ -75,6 +90,8 @@ TH-PTPM/
         │   │   ├── auth/               # Miền dữ liệu auth_db (User, Role, UserRepository)
         │   │   ├── pitch/              # Miền dữ liệu pitch_db (Pitch, PitchType, PitchStatus, GoldenHourPrice,...)
         │   │   ├── booking/            # Miền dữ liệu booking_db (Booking, BookingStatus, BookingRepository)
+        │   │   │   └── service/        # BookingTransactionalService (@Transactional ACID - TH4)
+        │   │   ├── payment/            # Miền dữ liệu payment_db (Payment Entity & PaymentRepository - TH4)
         │   │   ├── dto/                # Hợp đồng DTO chuẩn hóa trao đổi liên dịch vụ (TH2)
         │   │   │   ├── auth/           # TokenValidationRequestDTO, TokenValidationResponseDTO, UserResponseDTO
         │   │   │   ├── pitch/          # PriceResponseDTO, PitchResponseDTO, GoldenHourPriceDTO
@@ -93,6 +110,8 @@ TH-PTPM/
             │   ├── auth/UserRepositoryTest.java
             │   ├── pitch/PitchRepositoryTest.java
             │   ├── booking/BookingRepositoryTest.java
+            │   │   └── service/BookingTransactionalServiceTest.java  # Kiểm thử @Transactional Rollback/Commit (TH4)
+            │   ├── payment/PaymentRepositoryTest.java                # Kiểm thử CSDL payment_db (TH4)
             │   ├── mapper/             # Unit tests cho các mapper
             │   ├── dto/                # Serialization & Tolerant Reader Contract tests
             │   └── controller/         # MockMvc Integration tests cho GlobalExceptionHandler & Paging (TH3)
@@ -110,7 +129,7 @@ Dự án đã được cấu hình profile kiểm thử in-memory với CSDL H2 
 # Di chuyển vào thư mục data-layer
 cd data-layer
 
-# Chạy toàn bộ 36 bài kiểm thử đơn vị & tích hợp (TH1 + TH2 + TH3)
+# Chạy toàn bộ 41 bài kiểm thử đơn vị & tích hợp (TH1 + TH2 + TH3 + TH4)
 mvn clean test
 ```
 
@@ -118,15 +137,17 @@ mvn clean test
 ```text
 [INFO] Running com.football.data.auth.UserRepositoryTest (3 tests)
 [INFO] Running com.football.data.booking.BookingRepositoryTest (11 tests)
+[INFO] Running com.football.data.booking.service.BookingTransactionalServiceTest (4 tests)
 [INFO] Running com.football.data.controller.GlobalExceptionHandlerIntegrationTest (9 tests)
 [INFO] Running com.football.data.dto.InterServiceSerializationContractTest (4 tests)
 [INFO] Running com.football.data.mapper.BookingMapperTest (2 tests)
 [INFO] Running com.football.data.mapper.PitchMapperTest (2 tests)
 [INFO] Running com.football.data.mapper.UserMapperTest (2 tests)
+[INFO] Running com.football.data.payment.PaymentRepositoryTest (1 test)
 [INFO] Running com.football.data.pitch.PitchRepositoryTest (3 tests)
 [INFO] 
 [INFO] Results:
-[INFO] Tests run: 36, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 41, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
 ```
 

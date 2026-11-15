@@ -1,13 +1,15 @@
 -- ============================================================
--- TỔNG HỢP KHỞI TẠO CƠ SỞ DỮ LIỆU TOÀN BỘ HỆ THỐNG
+-- TỔNG HỢP KHỞI TẠO 4 CƠ SỞ DỮ LIỆU TOÀN BỘ HỆ THỐNG (TH4)
 -- Đề tài: Quản lý đặt lịch sân bóng đá (Football Booking System)
 -- Kiến trúc: Microservices / Database-per-Service
 -- Thành viên phụ trách: HÙNG (Data Administrator & Backend Data Engineer)
 -- Nhánh Git: feat/hung-data
--- File này tổng hợp khởi tạo 3 cơ sở dữ liệu vật lý độc lập:
+-- 
+-- Danh sách 4 CSDL vật lý độc lập:
 --   1. auth_db     (Phụ trách: Hoàng - auth-service @ 8080)
 --   2. pitch_db    (Phụ trách: Linh  - pitchs-service @ 8082)
 --   3. booking_db  (Phụ trách: Nhật  - booking-service @ 8081/8083)
+--   4. payment_db  (Phụ trách: Hùng  - payment-service @ 8084 / Tích hợp)
 -- ============================================================
 
 -- ------------------------------------------------------------
@@ -123,3 +125,33 @@ INSERT INTO `bookings` (`id`, `user_id`, `pitch_id`, `start_time`, `end_time`, `
 (2, 2, 2, '2026-11-21 19:00:00', '2026-11-21 21:00:00', 900000.00, 450000.00, 'CHO_DUYET', 'Thuê sân 7 đá giải văn phòng công ty'),
 (3, 1, 1, '2026-11-22 07:00:00', '2026-11-22 08:30:00', 375000.00, 250000.00, 'TU_CHOI', 'Trùng lịch nội bộ sân, đã từ chối');
 
+-- ------------------------------------------------------------
+-- PHẦN 4: CSDL payment_db (TH4 - Hoàn thiện 4 CSDL)
+-- ------------------------------------------------------------
+CREATE DATABASE IF NOT EXISTS `payment_db`
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `payment_db`;
+
+DROP TABLE IF EXISTS `payments`;
+CREATE TABLE `payments` (
+    `id`               BIGINT         NOT NULL AUTO_INCREMENT,
+    `booking_id`       BIGINT         NOT NULL,
+    `amount`           DECIMAL(12, 2) NOT NULL,
+    `payment_method`   VARCHAR(30)    NOT NULL,
+    `status`           VARCHAR(30)    NOT NULL DEFAULT 'PENDING',
+    `transaction_code` VARCHAR(100)   NOT NULL,
+    `payment_time`     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `note`             VARCHAR(255)   DEFAULT NULL,
+    `created_at`       DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`       DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `uk_payments_transaction_code` UNIQUE (`transaction_code`),
+    INDEX `idx_payments_booking_id` (`booking_id`),
+    INDEX `idx_payments_status` (`status`),
+    INDEX `idx_payments_time` (`payment_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `payments` (`id`, `booking_id`, `amount`, `payment_method`, `status`, `transaction_code`, `payment_time`, `note`) VALUES
+(1, 1, 375000.00, 'VNPAY',   'SUCCESS', 'TXN_VNPAY_20261120_001', '2026-11-20 17:45:00', 'Thanh toan tien coc san 5 don #1'),
+(2, 2, 900000.00, 'BANKING', 'SUCCESS', 'TXN_MB_20261121_002',    '2026-11-21 18:30:00', 'Chuyen khoan toan bo tien thue san 7 don #2'),
+(3, 3, 375000.00, 'MOMO',    'FAILED',  'TXN_MOMO_20261122_003',  '2026-11-22 06:45:00', 'Giao dich that bai do het thoi gian cho');
