@@ -312,3 +312,4 @@ $\implies$ **Toàn bộ 36/36 Test Cases ĐẠT 100% (BUILD SUCCESS)**.
    * Triển khai CSDL thật MySQL với JPA.
    * Củng cố nguyên tắc Database-per-Service, cấu hình giao dịch `@Transactional`.
    * Hoàn thiện kịch bản SQL init 4 DB và kiểm tra kết quả ghi đĩa vật lý.
+

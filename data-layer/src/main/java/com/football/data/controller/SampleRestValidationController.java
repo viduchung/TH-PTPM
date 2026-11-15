@@ -114,3 +114,4 @@ public class SampleRestValidationController {
         return ResponseEntity.ok(ApiResponse.ok("Dịch vụ hoạt động bình thường"));
     }
 }
+

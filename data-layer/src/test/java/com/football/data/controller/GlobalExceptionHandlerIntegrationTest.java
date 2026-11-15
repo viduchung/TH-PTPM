@@ -155,3 +155,4 @@ public class GlobalExceptionHandlerIntegrationTest {
                 .andExpect(jsonPath("$.data.empty").value(false));
     }
 }
+

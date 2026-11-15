@@ -17,3 +17,4 @@ public class ServiceUnavailableException extends RuntimeException {
         super(String.format("Dịch vụ '%s' hiện không khả dụng hoặc mất kết nối", serviceName), cause);
     }
 }
+
