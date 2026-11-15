@@ -1,0 +1,35 @@
+# Build Maven
+target/
+**/target/
+*.class
+*.jar
+*.war
+
+# IDE / hệ điều hành
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+*.swp
+.DS_Store
+Thumbs.db
+
+# Log
+*.log
+logs/
+
+# Biến môi trường và bí mật: KHÔNG commit (dùng .env.example làm mẫu)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+application-local.properties
+application-secret*.properties
+credentials*.json

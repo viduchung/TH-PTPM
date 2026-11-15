@@ -1,0 +1,10 @@
+# Kịch bản: tắt tiến trình Pitch Service thật (cổng 8082), gửi lại POST /api/v1/bookings (15/11/2026 17:33)
+Pitch Service đã TẮT (cổng 8082 không còn lắng nghe)
+TH2 Pitch tắt → POST: {"status":503,"error":"Service Unavailable","message":"Dịch vụ quản lý sân hiện không khả dụng. Vui lòng thử lại sau!","path":"/api/v1/bookings"} HTTP 503  (thời gian 920 ms)
+TH2 Booking vẫn sống → GET my-bookings: HTTP 200
+TH2 Bật lại Pitch → POST: HTTP 201
+
+# Log Booking Service tương ứng:
+2026-11-15T17:33:35.286+07:00  INFO 26124 --- [pitchos-booking-service] [ctor-http-nio-3] c.p.b.client.WebClientPitchGateway       : Thử lại lần 1 khi gọi Pitch Service cho sân 1: org.springf
+2026-11-15T17:33:35.538+07:00  INFO 26124 --- [pitchos-booking-service] [ctor-http-nio-4] c.p.b.client.WebClientPitchGateway       : Thử lại lần 2 khi gọi Pitch Service cho sân 1: org.springf
+2026-11-15T17:33:36.010+07:00  WARN 26124 --- [pitchos-booking-service] [nio-8083-exec-7] c.p.b.client.WebClientPitchGateway       : Không gọi được Pitch Service cho sân 1: org.springframework

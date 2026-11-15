@@ -1,0 +1,84 @@
+# BẰNG CHỨNG TH4 – MYSQL 8.4.3 (Booking Service, 15/11/2026)
+# Môi trường: mysqld 8.4.3 (binary có sẵn của Laragon, chữ ký số hợp lệ) chạy với --no-defaults, datadir MỚI trong %TEMP%,
+#   cổng 3399, bind 127.0.0.1. KHÔNG dùng dữ liệu Laragon hay CSDL nào đang có. sql_mode mặc định của 8.4.3 (có STRICT_TRANS_TABLES).
+# Script chung của nhóm (pitchos-database/booking-service.sql) chỉ được ĐỌC; tên CSDL được thay trong bản sao tạm.
+# CHƯA kiểm thử trên MySQL 8.0 và MySQL của nhóm.
+
+================ PHẦN 1. AUDIT (V2 BẢN CŨ, trước khắc phục) ================
+A  script chung → V2 cũ lần 1: exit 0, ENUM có da_huy, đủ cột/index/UNIQUE/pitch_locks, dòng cũ giữ nguyên (version=0)
+A3 V2 cũ lần 2: exit 1 — ERROR 1060 Duplicate column name 'price_per_hour'; --force: thêm 4 lỗi 1061 Duplicate key name (không mất dữ liệu)
+B  CSDL mới, Hibernate ddl-auto=update tạo schema: đủ cột, ENUM có da_huy, 3 index, UNIQUE, pitch_locks
+C  script chung → ứng dụng khởi động trước: Hibernate thêm cột/index/UNIQUE/pitch_locks nhưng ENUM VẪN THIẾU da_huy
+D  script chung, KHÔNG chạy V2: đặt sân 201; hủy đơn → 500, log MySQL: SQL Error 1265 Data truncated for column 'status' (đơn không đổi)
+--- Kiểm thử chức năng, 2 instance Booking (18083, 18093) dùng CHUNG CSDL đã migrate:
+ĐẠT  F1 POST 201 và dòng lưu đúng trong MySQL  [3	1	2026-12-15 08:00:00	2026-12-15 09:30:00	450000.00	300000.00	cho_duyet	0]
+ĐẠT  F1b Instance thứ 2 đọc được đơn do instance 1 ghi (cùng CSDL)
+ĐẠT  F2 Đặt trùng giờ → 400
+ĐẠT  F2b Khung giờ liền kề → 201
+ĐẠT  F3 Hủy → da_huy ghi được vào ENUM MySQL
+ĐẠT  F3b Khung giờ đã hủy đặt lại được
+ĐẠT  F4 Gửi lại cùng key ở instance khác → 200 cùng id; khác nội dung → 409  [201,200,409]
+ĐẠT  F5 20 request đồng thời qua 2 instance → đúng 1 đơn (201), 19 lỗi 400  [201=1 400=19 khác=[] db=1]
+ĐẠT  F6 10 request đồng thời cùng key qua 2 instance → 1 dòng, cùng id  [mã=[200, 200, 200, 200, 200, 200, 200, 200, 200, 201] db=1]
+ĐẠT  F7 Giao dịch thất bại (trùng lịch) → rollback, số dòng không đổi
+ĐẠT  F8 Hai cập nhật đồng thời → không mất cập nhật (1 thắng; bên kia 409/400) và version tăng đúng  [mã=[409, 200] cuối=da_huy	1]
+ĐẠT  F9 Request đặt sân phải CHỜ khóa dòng pitch_locks do phiên khác giữ (SELECT … FOR UPDATE)  [chờ 3.0s, mã 201]
+TỔNG: 12/12 đạt
+ĐẠT  F10 Cùng key, 2 sân khác nhau, đồng thời → INSERT vi phạm UNIQUE bị rollback: đúng 1 dòng, các request còn lại 200/409  [mã=[200, 200, 200, 200, 201, 409, 409, 409, 409, 409] dòng có key=1 dòng cùng giờ=1]
+--- Bộ test hiện có trên MySQL (trước khắc phục): 86/87 — lỗi duy nhất: Th4BookingRepositoryJpaTest.schemaHasIndexesAndNoForeignKeys dùng information_schema.indexes (chỉ có trên H2)
+
+================ PHẦN 2. KHẮC PHỤC – V2 CHẠY LẠI AN TOÀN (instance MySQL 8.4.3 mới, datadir mới) ================
+Lệnh: mysql --no-defaults -h 127.0.0.1 -P 3399 -u root --default-character-set=utf8mb4 <ten_csdl> < V2__booking_th1_th7_mysql.sql (không --force)
+===== S1. Script chung → V2 lần 1 → V2 lần 2 → V2 lần 3 (CSDL: r2_s1) =====
+Trước V2: số dòng + md5 dữ liệu gốc = 3	a91e830a49f8ded56a4efcb2cc9917ef | status = enum('cho_duyet','da_duyet','tu_choi')
+ĐẠT  S1.1 V2 lần 1 thoát mã 0
+      kết quả: r2_s1	enum('cho_duyet','da_duyet','tu_choi','da_huy')	4	1	3
+ĐẠT  S1.2 ENUM status có da_huy
+ĐẠT  S1.3 Đủ 4 cột mới, 3 index, 1 UNIQUE, bảng pitch_locks
+ĐẠT  S1.4 Dữ liệu gốc KHÔNG đổi sau lần 1 (số dòng + md5 cột gốc)
+      3	a91e830a49f8ded56a4efcb2cc9917ef
+ĐẠT  S1.5 Dòng cũ có version = 0
+ĐẠT  S1.6 V2 lần 2 thoát mã 0, không lỗi
+ĐẠT  S1.7 Lần 2 không tạo cột / index trùng: cấu trúc giống hệt lần 1
+ĐẠT  S1.8 Lần 2 không đổi dữ liệu: CHECKSUM TABLE và số dòng giống hệt
+      checksum 3864756590 → 3864756590
+ĐẠT  S1.9 V2 lần 3 vẫn thoát mã 0, cấu trúc không đổi
+ĐẠT  S1.10 Ghi được giá trị da_huy
+===== S3. Không chỉ định CSDL =====
+ĐẠT  S3 Không chọn CSDL → dừng ngay (mã ≠ 0), không chạy tiếp
+      ERROR 1046 (3D000) at line 47: No database selected
+===== S6. Cấu trúc không tương thích → báo lỗi rõ ràng, KHÔNG thay đổi gì =====
+ĐẠT  S6a CSDL không có bảng bookings
+ĐẠT  S6b ENUM status lạ → dừng, không MODIFY (không làm mất giá trị 'pending')
+ĐẠT  S6c Cột price_per_hour đã có nhưng sai kiểu → dừng, ENUM chưa bị sửa
+ĐẠT  S6d Index trùng tên nhưng khác cột → dừng
+ĐẠT  S6e Dữ liệu trùng (user_id, idempotency_key) → dừng trước khi tạo UNIQUE
+ĐẠT  S6f pitch_locks đã có nhưng khác cấu trúc → dừng
+TỔNG (kịch bản không cần ứng dụng): 17 đạt, 0 lỗi
+--- Chi tiết lỗi các ca không tương thích (V2 dừng ở PHẦN 1, trước mọi thay đổi; Windows hiển thị tên chữ thường):
+  r2_s6_trong  ERROR 1146 (42S02) at line 53: Table 'r2_s6_trong.v2_loi_khong_co_bang_bookings' doesn't exist
+  r2_s6_enum   ERROR 1146 (42S02) at line 76: Table 'r2_s6_enum.v2_loi_enum_status_khong_tuong_thich' doesn't exist
+  r2_s6_cot    ERROR 1146 (42S02) at line 86: Table 'r2_s6_cot.v2_loi_cot_moi_sai_kieu' doesn't exist
+  r2_s6_idx    ERROR 1146 (42S02) at line 103: Table 'r2_s6_idx.v2_loi_index_trung_ten_sai_dinh_nghia' doesn't exist
+  r2_s6_dup    ERROR 1146 (42S02) at line 118: Table 'r2_s6_dup.v2_loi_trung_idempotency_key' doesn't exist
+  r2_s6_lock   ERROR 1146 (42S02) at line 131: Table 'r2_s6_lock.v2_loi_pitch_locks_khong_tuong_thich' doesn't exist
+===== S2. Script chung → ứng dụng khởi động TRƯỚC (thiếu da_huy, đã có 4/4 cột mới và index) → V2 =====
+ĐẠT  S2.1 V2 lần 1 thoát mã 0, ENUM có da_huy
+ĐẠT  S2.2 V2 lần 2 thoát mã 0, cấu trúc không đổi
+ĐẠT  S2.3 Dữ liệu gốc không đổi (số dòng + md5 cột gốc giống trước V2)
+===== S5. CSDL MỚI do Hibernate tạo → V2 hai lần =====
+ĐẠT  S5 V2 thoát mã 0 / 0, SHOW CREATE TABLE trước = sau (không thay đổi gì)
+     kết quả: r2_s5	enum('cho_duyet','da_duyet','tu_choi','da_huy')	4	1	0
+
+================ PHẦN 3. BỘ TEST SAU KHẮC PHỤC ================
+--- H2 (cấu hình test gốc), mvn -B clean test:
+  Tests run: 87, Failures: 0, Errors: 0, Skipped: 0
+  BUILD SUCCESS
+--- MySQL 8.4.3 (bản sao tạm, application-test.properties trỏ 127.0.0.1:3399, spring.test.database.replace=none), mvn -B clean test:
+  Tests run: 87, Failures: 0, Errors: 0, Skipped: 0
+  BUILD SUCCESS
+  log MySQL: 0 dòng nhắc H2; 7 kết nối MySQL
+--- Kiểm chứng test index mới (đột biến trên bản sao tạm, chạy H2):
+  BẮT ĐƯỢC  bỏ index idx_bookings_status → expected IndexDef[columns=[status], unique=false] but was null
+  BẮT ĐƯỢC  đảo cột idx_bookings_pitch_time → but was IndexDef[columns=[start_time, pitch_id, end_time], unique=false]
+  BẮT ĐƯỢC  thêm khóa ngoại bookings.pitch_id → pitch_locks → expected 0 but was 1

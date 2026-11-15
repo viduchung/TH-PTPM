@@ -1,0 +1,18 @@
+# BẰNG CHỨNG GIAI ĐOẠN CHUẨN HÓA CẤU HÌNH (16/11/2026) — MySQL 8.4.3 THỬ NGHIỆM, KHÔNG PHẢI MySQL 8.0
+# Instance: mysqld 8.4.3 (Laragon) --no-defaults, datadir trong %TEMP%, cổng 3399, bind 127.0.0.1. Không dùng CSDL nào đang có.
+# Máy KHÔNG có MySQL 8.0 → chưa có bằng chứng trên 8.0.
+
+== 1. V2 với --show-warnings (CSDL ch_warn = bản sao tạm của script chung) ==
+V2 lần 1: 0 cảnh báo/ghi chú; dòng kết quả: ch_warn	enum('cho_duyet','da_duyet','tu_choi','da_huy')	4	1	1
+V2 lần 2: Note (Code 1050): Table 'pitch_locks' already exists
+Ép chạy trực tiếp: SELECT COUNT(*) INTO @x FROM (SELECT 1) AS d; SELECT 1 INTO @y FROM DUAL; SELECT COUNT(*) FROM bookings INTO @z → không có cảnh báo deprecated (1287) trên 8.4.3
+
+== 2. Khởi động ứng dụng với --spring.jpa.hibernate.ddl-auto=validate (KHÔNG sửa application.properties) ==
+booking_db    KHỞI ĐỘNG ĐƯỢC
+r2_s5         KHỞI ĐỘNG ĐƯỢC
+ch_team_only  KHÔNG KHỞI ĐỘNG — Schema-validation: missing column [idempotency_key] in table [bookings]
+ch_empty      KHÔNG KHỞI ĐỘNG — Schema-validation: missing table [bookings]
+ch_thieu_huy  KHỞI ĐỘNG ĐƯỢC
+Ghi chú: booking_db = script chung + V2 (BOOKING_DB_NAME=booking_db); r2_s5 = Hibernate tạo; ch_team_only = script chung chưa chạy V2;
+         ch_empty = CSDL rỗng; ch_thieu_huy = đủ cột + pitch_locks nhưng ENUM status vẫn enum('cho_duyet','da_duyet','tu_choi')
+→ validate KHÔNG kiểm tra danh sách giá trị ENUM.
