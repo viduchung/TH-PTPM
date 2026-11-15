@@ -36,3 +36,4 @@ public class PaymentIntegrationResponseDTO {
     @Builder.Default
     private LocalDateTime timestamp = LocalDateTime.now();
 }
+

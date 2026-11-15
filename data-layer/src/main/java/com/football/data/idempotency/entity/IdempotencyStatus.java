@@ -17,3 +17,4 @@ public enum IdempotencyStatus {
     /** Yêu cầu gặp lỗi trong quá trình thực thi */
     FAILED
 }
+

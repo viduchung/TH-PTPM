@@ -73,3 +73,4 @@ public class BookingStateTransitionValidatorTest {
         assertFalse(validator.isTerminalState(BookingStatus.DA_DUYET));
     }
 }
+

@@ -61,3 +61,4 @@ public class SampleIntegrationController {
         return ResponseEntity.ok(ApiResponse.success(result, "Xác thực trạng thái thành công"));
     }
 }
+

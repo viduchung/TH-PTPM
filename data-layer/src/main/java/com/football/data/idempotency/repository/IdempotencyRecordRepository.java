@@ -24,3 +24,4 @@ public interface IdempotencyRecordRepository extends JpaRepository<IdempotencyRe
      */
     boolean existsByIdempotencyKey(String idempotencyKey);
 }
+

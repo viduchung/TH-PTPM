@@ -74,3 +74,4 @@ public class BookingStateTransitionValidator {
         return status == BookingStatus.TU_CHOI || status == BookingStatus.DA_HUY;
     }
 }
+

@@ -39,3 +39,4 @@ public class BookingIntegrationEventDTO {
     @Builder.Default
     private LocalDateTime timestamp = LocalDateTime.now();
 }
+

@@ -30,3 +30,4 @@ public class PitchAvailabilityResponseDTO {
 
     private String message;
 }
+

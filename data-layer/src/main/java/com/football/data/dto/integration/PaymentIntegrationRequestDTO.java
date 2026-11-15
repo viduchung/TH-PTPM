@@ -38,3 +38,4 @@ public class PaymentIntegrationRequestDTO {
 
     private String note;
 }
+

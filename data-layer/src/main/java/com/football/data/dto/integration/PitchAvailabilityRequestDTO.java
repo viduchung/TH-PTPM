@@ -35,3 +35,4 @@ public class PitchAvailabilityRequestDTO {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime endTime;
 }
+

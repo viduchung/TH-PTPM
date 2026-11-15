@@ -119,3 +119,4 @@ public class IntegrationContractCompatibilityTest {
         assertEquals(303L, parsed.getBookingId());
     }
 }
+

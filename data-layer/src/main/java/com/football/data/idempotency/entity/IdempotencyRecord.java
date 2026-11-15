@@ -70,3 +70,4 @@ public class IdempotencyRecord {
         this.updatedAt = LocalDateTime.now();
     }
 }
+
