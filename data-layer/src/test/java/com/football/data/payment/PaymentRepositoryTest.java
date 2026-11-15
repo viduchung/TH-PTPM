@@ -47,3 +47,4 @@ public class PaymentRepositoryTest {
         assertThat(byBooking).hasSize(1);
     }
 }
+

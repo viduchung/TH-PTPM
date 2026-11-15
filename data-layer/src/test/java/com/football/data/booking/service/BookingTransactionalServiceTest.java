@@ -147,3 +147,4 @@ public class BookingTransactionalServiceTest {
         assertThat(paymentRepository.count()).isEqualTo(0L);
     }
 }
+

@@ -44,3 +44,4 @@ INSERT INTO `payments` (`id`, `booking_id`, `amount`, `payment_method`, `status`
 (1, 1, 375000.00, 'VNPAY',   'SUCCESS', 'TXN_VNPAY_20261120_001', '2026-11-20 17:45:00', 'Thanh toan tien coc san 5 don #1'),
 (2, 2, 900000.00, 'BANKING', 'SUCCESS', 'TXN_MB_20261121_002',    '2026-11-21 18:30:00', 'Chuyen khoan toan bo tien thue san 7 don #2'),
 (3, 3, 375000.00, 'MOMO',    'FAILED',  'TXN_MOMO_20261122_003',  '2026-11-22 06:45:00', 'Giao dich that bai do het thoi gian cho');
+

@@ -261,3 +261,4 @@ $\implies$ **Toàn bộ 41/41 Test Cases ĐẠT 100% (BUILD SUCCESS)**.
 2. **Kế hoạch cho buổi TH5:**
    * Nghiên cứu và chuẩn hóa cơ chế bảo mật JWT / Spring Security dùng chung (`common-security`).
    * Phân quyền RBAC chặt chẽ (CUSTOMER, FIELD_OWNER, ADMIN).
+
