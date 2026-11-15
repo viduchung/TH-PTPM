@@ -1,0 +1,69 @@
+# ============================================================
+#  PITCHS SERVICE - Football Booking System
+#  Phụ trách: Linh | Port mặc định: 8082 (Hỗ trợ cấu hình linh hoạt)
+# ============================================================
+server:
+  port: ${PORT:8082} # Cho phép override port bằng biến môi trường hoặc tham số dòng lệnh (--server.port=...)
+
+spring:
+  application:
+    name: pitchs-service
+
+  # ------------------------------------------------------------
+  #  CSDL: pitch_db (MySQL) - Database-per-Service
+  #  Nếu chưa bật MySQL, chạy profile H2: -Dspring-boot.run.profiles=h2
+  # ------------------------------------------------------------
+  datasource:
+    url: jdbc:mysql://localhost:3306/pitch_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+# ------------------------------------------------------------
+#  JWT & BẢO MẬT LIÊN SERVICE (TH5, TH6)
+# ------------------------------------------------------------
+app:
+  jwt:
+    secret: ${JWT_SECRET:FootballBookingAuthServiceSecretKey2026_ChangeMeInProductionPlease_0123456789}
+  internal:
+    service-key: ${INTERNAL_SERVICE_KEY:FootballInternalSecretServiceKey2026}
+
+# ------------------------------------------------------------
+#  EUREKA SERVICE REGISTRY & MULTI-INSTANCE (TH7)
+# ------------------------------------------------------------
+eureka:
+  client:
+    enabled: ${EUREKA_ENABLED:true} # Bật đăng ký Eureka ở TH7
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    # Đặt instance-id duy nhất kết hợp random UUID và port để chạy nhiều instance không bị đè nhau
+    instance-id: ${spring.application.name}:${random.value}:${server.port}
+    lease-renewal-interval-in-seconds: 10 # Gửi heartbeat định kỳ 10 giây/lần
+    lease-expiration-duration-in-seconds: 30 # Xóa instance nếu sau 30 giây không nhận được heartbeat
+
+# ------------------------------------------------------------
+#  Swagger UI (OpenAPI): http://localhost:8082/swagger-ui.html
+# ------------------------------------------------------------
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
