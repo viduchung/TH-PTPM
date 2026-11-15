@@ -1,0 +1,13 @@
+erDiagram
+    %% CSDL auth_db: auth-service (Port 8080)
+    USERS {
+        bigint id PK "Tự tăng (Auto Increment)"
+        varchar username UK "Tên đăng nhập (Duy nhất)"
+        varchar password_hash "Mật khẩu BCrypt hash"
+        varchar role "ROLE_CUSTOMER / ROLE_FIELD_OWNER / ROLE_ADMIN"
+        varchar full_name "Họ và tên"
+        varchar phone "Số điện thoại liên hệ"
+        boolean active "Trạng thái tài khoản"
+        datetime created_at "Ngày tạo"
+        datetime updated_at "Ngày cập nhật"
+    }

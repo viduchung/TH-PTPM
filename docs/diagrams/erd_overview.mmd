@@ -1,0 +1,64 @@
+erDiagram
+    %% ==============================================================
+    %% SƠ ĐỒ ERD TỔNG THỂ HỆ THỐNG QUẢN LÝ ĐẶT LỊCH SÂN BÓNG ĐÁ
+    %% Kiến trúc: Microservices / Database-per-Service
+    %% Thiết kế: HÙNG (feat/hung-data) - Tuần 1 (TH1)
+    %% ==============================================================
+
+    %% MIỀN DỮ LIỆU 1: auth_db (Auth Service - Port 8080)
+    USERS {
+        bigint id PK "Khóa chính tự tăng"
+        varchar username UK "Tên đăng nhập (duy nhất)"
+        varchar password_hash "Mật khẩu băm BCrypt"
+        varchar role "ROLE_CUSTOMER, ROLE_FIELD_OWNER, ROLE_ADMIN"
+        varchar full_name "Họ và tên người dùng"
+        varchar phone "Số điện thoại"
+        boolean active "Trạng thái hoạt động (1/0)"
+        datetime created_at "Ngày tạo"
+        datetime updated_at "Ngày cập nhật"
+    }
+
+    %% MIỀN DỮ LIỆU 2: pitch_db (Pitchs Service - Port 8082)
+    PITCHES {
+        bigint id PK "Khóa chính sân bóng"
+        varchar name "Tên sân bóng"
+        varchar type "Loại sân: SAN_5, SAN_7, SAN_11"
+        decimal price_per_hour "Giá thuê mỗi giờ"
+        varchar address "Địa chỉ cụm sân"
+        varchar status "AVAILABLE, BOOKED, MAINTENANCE"
+        text description "Mô tả chi tiết"
+        datetime created_at "Ngày tạo"
+        datetime updated_at "Ngày cập nhật"
+    }
+
+    GOLDEN_HOUR_PRICES {
+        bigint id PK "Khóa chính bảng giá giờ vàng"
+        bigint pitch_id FK "Khóa ngoại nội bộ trỏ pitches(id)"
+        varchar day_of_week "ALL_DAYS, WEEKDAY, WEEKEND"
+        time start_time "Giờ bắt đầu"
+        time end_time "Giờ kết thúc"
+        decimal price_per_hour "Đơn giá giờ vàng"
+        varchar description "Mô tả khung giờ"
+    }
+
+    %% MIỀN DỮ LIỆU 3: booking_db (Booking Service - Port 8081 / 8083)
+    BOOKINGS {
+        bigint id PK "Mã đơn đặt sân (Khóa chính)"
+        bigint user_id "Khóa Logic trỏ sang auth_db.users(id)"
+        bigint pitch_id "Khóa Logic trỏ sang pitch_db.pitches(id)"
+        datetime start_time "Giờ bắt đầu nhận sân"
+        datetime end_time "Giờ kết thúc trả sân"
+        decimal total_price "Tổng tiền thuê sân"
+        decimal price_per_hour "Đơn giá tại thời điểm chốt"
+        varchar status "CHO_DUYET, DA_DUYET, TU_CHOI, DA_HUY"
+        varchar note "Ghi chú đặt sân"
+        datetime created_at "Ngày tạo đơn"
+        datetime updated_at "Ngày cập nhật"
+    }
+
+    %% QUAN HỆ NỘI BỘ VẬT LÝ (Physical FK)
+    PITCHES ||--o{ GOLDEN_HOUR_PRICES : "1 sân có nhiều khung giá giờ vàng (Cùng pitch_db)"
+
+    %% QUAN HỆ LOGIC PHÂN TÁN (Loose Coupling / Khóa logic - KHÔNG CÓ FK VẬT LÝ)
+    USERS ||..o{ BOOKINGS : "Khóa Logic: user_id (Khác DB - Không FK)"
+    PITCHES ||..o{ BOOKINGS : "Khóa Logic: pitch_id (Khác DB - Không FK)"
