@@ -1,0 +1,95 @@
+# ============================================================
+#  BOOKING SERVICE - Football Booking System
+#  Phụ trách: Nhật | Port mặc định: 8081 (instance 2: --server.port=8083)
+# ============================================================
+server:
+  port: ${PORT:8081}
+
+spring:
+  application:
+    name: booking-service
+
+  # ------------------------------------------------------------
+  #  CSDL: booking_db (MySQL) - Database-per-Service (TH4)
+  #  Chưa bật MySQL? Chạy profile H2: -Dspring-boot.run.profiles=h2
+  # ------------------------------------------------------------
+  datasource:
+    url: jdbc:mysql://localhost:3306/booking_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+# ------------------------------------------------------------
+#  JWT & BẢO MẬT LIÊN SERVICE (TH5, TH6) - phải trùng auth-service / pitchs-service
+# ------------------------------------------------------------
+app:
+  jwt:
+    secret: ${JWT_SECRET:FootballBookingAuthServiceSecretKey2026_ChangeMeInProductionPlease_0123456789}
+  internal:
+    service-key: ${INTERNAL_SERVICE_KEY:FootballInternalSecretServiceKey2026}
+  # Múi giờ dùng cho quy tắc "giờ bắt đầu phải ở tương lai"
+  timezone: Asia/Ho_Chi_Minh
+
+  # ----------------------------------------------------------
+  #  TH2 / TH6 / TH7: các service mà booking gọi sang
+  #  load-balanced=true  -> base-url là TÊN SERVICE trên Eureka (http://pitchs-service),
+  #                         Spring Cloud LoadBalancer chọn instance theo round-robin.
+  #  load-balanced=false -> base-url là địa chỉ thật (http://localhost:8082).
+  # ----------------------------------------------------------
+  clients:
+    pitch:
+      base-url: ${PITCH_SERVICE_URL:http://pitchs-service}
+      load-balanced: ${PITCH_LOAD_BALANCED:true}
+    # auth-service mặc định chưa bật Eureka nên gọi thẳng theo URL
+    auth:
+      base-url: ${AUTH_SERVICE_URL:http://localhost:8080}
+      load-balanced: ${AUTH_LOAD_BALANCED:false}
+    connect-timeout-ms: 2000
+    response-timeout-ms: 3000
+    max-retries: 2
+    retry-backoff-ms: 200
+
+# ------------------------------------------------------------
+#  EUREKA SERVICE REGISTRY (TH7) - theo chuẩn config/eureka-client-common.yml
+# ------------------------------------------------------------
+eureka:
+  client:
+    enabled: ${EUREKA_ENABLED:true}
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+    registry-fetch-interval-seconds: 10
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}:${server.port}
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info"
+
+# ------------------------------------------------------------
+#  Swagger UI: http://localhost:8081/swagger-ui.html
+# ------------------------------------------------------------
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs

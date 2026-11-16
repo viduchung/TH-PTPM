@@ -1,0 +1,35 @@
+# Profile "test": H2 trong bộ nhớ (chế độ MySQL) CHỈ cho test tự động - không thay cho kiểm thử MySQL thật.
+spring:
+  datasource:
+    url: jdbc:h2:mem:booking_${random.uuid};MODE=MySQL;DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=10000;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+    hikari:
+      maximum-pool-size: 20
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+eureka:
+  client:
+    enabled: false
+
+app:
+  clients:
+    pitch:
+      load-balanced: false
+    auth:
+      load-balanced: false
+    # Timeout / retry ngắn để test nhanh nhưng vẫn đúng cơ chế
+    connect-timeout-ms: 500
+    response-timeout-ms: 700
+    max-retries: 2
+    retry-backoff-ms: 20
+
+logging:
+  level:
+    com.football.bookingservice: INFO
