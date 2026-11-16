@@ -1,0 +1,16 @@
+erDiagram
+    %% CSDL booking_db: booking-service (Port 8081 / 8083)
+    BOOKINGS {
+        bigint id PK "Mã đơn đặt sân (Tự tăng)"
+        bigint user_id "Khóa Logic trỏ sang auth_db.users(id)"
+        bigint pitch_id "Khóa Logic trỏ sang pitch_db.pitches(id)"
+        datetime start_time "Thời gian bắt đầu nhận sân"
+        datetime end_time "Thời gian kết thúc trả sân"
+        decimal total_price "Tổng tiền thuê sân"
+        decimal price_per_hour "Đơn giá chụp tại thời điểm đặt"
+        varchar status "CHO_DUYET / DA_DUYET / TU_CHOI / DA_HUY"
+        varchar note "Ghi chú khách hàng"
+        datetime created_at "Ngày tạo đơn"
+        datetime updated_at "Ngày cập nhật trạng thái"
+    }
+

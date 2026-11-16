@@ -1,0 +1,118 @@
+{
+  "info": {
+    "name": "Pitchs Service (Port 8082) - TH1 to TH6 Complete",
+    "_postman_id": "b1a2c3d4-pitch-service-th6-collection",
+    "description": "Bộ API hoàn chỉnh từ TH1 đến TH6 (CRUD, Phân trang, JPA Giờ vàng, Bảo mật JWT RBAC, Provider /quote)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. [TH6] Tính báo giá /quote (Giờ thường + Giờ vàng)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8082/api/pitches/1/quote?date=2026-11-20&startTime=16:30:00&endTime=18:30:00",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8082",
+          "path": ["api", "pitches", "1", "quote"],
+          "query": [
+            { "key": "date", "value": "2026-11-20" },
+            { "key": "startTime", "value": "16:30:00" },
+            { "key": "endTime", "value": "18:30:00" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "2. [TH6] Lỗi báo giá sai giờ (400 Bad Request)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8082/api/pitches/1/quote?date=2026-11-20&startTime=19:00:00&endTime=17:00:00",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8082",
+          "path": ["api", "pitches", "1", "quote"],
+          "query": [
+            { "key": "date", "value": "2026-11-20" },
+            { "key": "startTime", "value": "19:00:00" },
+            { "key": "endTime", "value": "17:00:00" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "3. [TH5] Thêm sân KHÔNG CÓ TOKEN (Test 401)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Sân Không Quyền\",\n  \"type\": \"SAN_5\",\n  \"pricePerHour\": 300000\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8082/api/pitches",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8082",
+          "path": ["api", "pitches"]
+        }
+      }
+    },
+    {
+      "name": "4. [TH5/6] Thêm sân bằng Internal Service Key",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Internal-Service-Key",
+            "value": "FootballInternalSecretServiceKey2026"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Sân 7 M2M Internal\",\n  \"type\": \"SAN_7\",\n  \"pricePerHour\": 450000,\n  \"status\": \"AVAILABLE\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8082/api/pitches",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8082",
+          "path": ["api", "pitches"]
+        }
+      }
+    },
+    {
+      "name": "5. [TH3] Tìm kiếm & Phân trang sân bóng",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8082/api/pitches/search?type=SAN_7&status=AVAILABLE&page=0&size=5",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8082",
+          "path": ["api", "pitches", "search"],
+          "query": [
+            { "key": "type", "value": "SAN_7" },
+            { "key": "status", "value": "AVAILABLE" },
+            { "key": "page", "value": "0" },
+            { "key": "size", "value": "5" }
+          ]
+        }
+      }
+    }
+  ]
+}
